@@ -25,12 +25,12 @@ export function Navigation() {
         ]
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-primary/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-2xl font-bold text-primary-foreground">
               {language === "es" ? "Patagonia Trek" : "Patagonia Trek"}
             </div>
           </Link>
@@ -44,7 +44,7 @@ export function Navigation() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className="text-primary-foreground hover:text-accent transition-colors font-medium"
                 >
                   {item.label}
                 </a>
@@ -52,7 +52,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className="text-primary-foreground hover:text-accent transition-colors font-medium"
                 >
                   {item.label}
                 </Link>
@@ -78,7 +78,7 @@ export function Navigation() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-border">
+        <div className="md:hidden border-t border-primary/80">
           <div className="px-4 pt-2 pb-3 space-y-1">
             {navItems.map((item) => (
               item.isExternal ? (
@@ -87,7 +87,7 @@ export function Navigation() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-primary-foreground hover:text-accent hover:bg-primary/80 rounded-md transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
@@ -96,7 +96,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-primary-foreground hover:text-accent hover:bg-primary/80 rounded-md transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
