@@ -1,7 +1,7 @@
 {
   "runtime": "node",
   "install": "pnpm install",
-  "build": "pnpm run build",
-  "start": "pnpm run start -- -p 3005",
+  "build": "pnpm exec next build --webpack",
+  "start": "pnpm exec next start -p 3005",
   "port": 3005
 }
