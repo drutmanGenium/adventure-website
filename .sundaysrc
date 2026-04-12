@@ -1,7 +1,7 @@
 {
   "runtime": "node",
   "install": "npm install",
-  "build": "npx next build",
+  "build": "npx next build --webpack",
   "start": "npx next start -p 3005",
   "port": 3005
 }
