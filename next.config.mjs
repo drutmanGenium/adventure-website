@@ -6,6 +6,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    cpus: 1, // Use fewer workers to reduce memory usage
+  },
 }
 
 export default nextConfig
