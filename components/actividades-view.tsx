@@ -13,6 +13,10 @@ export type Category =
   | "Ojo del Albino"
   | "Valle Tierra Mayor"
   | "Valle de Andorra"
+  | "Trekking"
+  | "Parque Nacional"
+  | "Navegación / Canal Beagle"
+  | "City tour"
 
 export interface Activity {
   id: string
@@ -228,6 +232,10 @@ const CATEGORIES: { label: string; value: Category | "all" }[] = [
   { label: "Ojo del Albino", value: "Ojo del Albino" },
   { label: "Valle Tierra Mayor", value: "Valle Tierra Mayor" },
   { label: "Valle de Andorra", value: "Valle de Andorra" },
+  { label: "Trekking", value: "Trekking" },
+  { label: "Parque Nacional", value: "Parque Nacional" },
+  { label: "Canal Beagle", value: "Navegación / Canal Beagle" },
+  { label: "City Tour", value: "City tour" },
 ]
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
