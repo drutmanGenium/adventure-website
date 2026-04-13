@@ -30,7 +30,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
               {language === "es" ? "Patagonia Trek" : "Patagonia Trek"}
             </div>
           </Link>
