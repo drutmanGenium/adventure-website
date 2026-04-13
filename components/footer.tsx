@@ -14,7 +14,7 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* About */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Patagonia Trek</h3>
+            <h3 className="text-xl font-bold mb-4 text-red-500">Patagonia Trek</h3>
             <p className="text-sm opacity-80 mb-4">
               {t(
                 "Explorá la Patagonia con guías expertos y grupos reducidos",
@@ -108,7 +108,7 @@ export function Footer() {
 
         <div className="border-t border-white/10 pt-8 text-center text-sm opacity-70">
           <p>
-            &copy; {new Date().getFullYear()} Patagonia Trek.{" "}
+            &copy; {new Date().getFullYear()} <span className="text-red-500">Patagonia Trek</span>.{" "}
             {t("Todos los derechos reservados", "All rights reserved")}.
           </p>
         </div>
