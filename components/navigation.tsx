@@ -44,7 +44,7 @@ export function Navigation() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className="text-primary hover:text-foreground transition-colors font-medium"
                 >
                   {item.label}
                 </a>
@@ -52,7 +52,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className="text-primary hover:text-foreground transition-colors font-medium"
                 >
                   {item.label}
                 </Link>
@@ -87,7 +87,7 @@ export function Navigation() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-primary hover:text-foreground hover:bg-accent rounded-md transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
@@ -96,7 +96,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-primary hover:text-foreground hover:bg-accent rounded-md transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
