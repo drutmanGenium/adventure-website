@@ -1,15 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import Link from "next/link"
 import { Menu, X, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
 import { createWhatsAppHref } from "@/lib/whatsapp"
+import { AvatarUpload } from "@/components/avatar-upload"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { language, toggleLanguage } = useLanguage()
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  const handleAvatarChange = useCallback((avatarData: string | null, mimeType: string | null) => {
+    if (avatarData && mimeType) {
+      const dataUrl = `data:${mimeType};base64,${avatarData}`
+      setAvatarUrl(dataUrl)
+    } else {
+      setAvatarUrl(null)
+    }
+  }, [])
 
   const navItems =
     language === "es"
@@ -62,10 +73,20 @@ export function Navigation() {
               <Globe className="h-5 w-5" />
               <span className="sr-only">Change language</span>
             </Button>
+            <AvatarUpload
+              currentAvatarUrl={avatarUrl}
+              onAvatarChange={handleAvatarChange}
+              size="sm"
+            />
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
+            <AvatarUpload
+              currentAvatarUrl={avatarUrl}
+              onAvatarChange={handleAvatarChange}
+              size="sm"
+            />
             <Button variant="ghost" size="icon" onClick={toggleLanguage}>
               <Globe className="h-5 w-5" />
             </Button>

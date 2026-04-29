@@ -95,3 +95,12 @@ export interface ContactRequest {
   subject: string
   message: string
 }
+
+export interface UserProfile {
+  id: string
+  name: string
+  email: string
+  avatarUrl: string
+  createdAt: string
+  updatedAt: string
+}

@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { Star } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
+import { UserAvatar } from "@/components/user-avatar"
 
 export function TestimonialsSection() {
   const { t, language } = useLanguage()
@@ -17,6 +18,7 @@ export function TestimonialsSection() {
           ? "Una experiencia inolvidable en el Fitz Roy. Los guías fueron excepcionales, conocían cada rincón y nos hicieron sentir seguros en todo momento. ¡Volveré sin dudas!"
           : "An unforgettable experience at Fitz Roy. The guides were exceptional, knew every corner and made us feel safe at all times. I will definitely return!",
       trek: "Fitz Roy",
+      avatar: null,
     },
     {
       name: "John Smith",
@@ -27,6 +29,7 @@ export function TestimonialsSection() {
           ? "El trekking en el Glaciar Perito Moreno superó todas mis expectativas. La organización fue impecable y los paisajes simplemente espectaculares."
           : "The Perito Moreno Glacier trek exceeded all my expectations. The organization was impeccable and the landscapes simply spectacular.",
       trek: "Perito Moreno",
+      avatar: null,
     },
     {
       name: "Ana Silva",
@@ -37,6 +40,7 @@ export function TestimonialsSection() {
           ? "Perfecto para mi primer trekking en Patagonia. El grupo era pequeño, el ritmo adecuado y aprendí muchísimo sobre la región. Totalmente recomendado."
           : "Perfect for my first trek in Patagonia. The group was small, the pace was right and I learned a lot about the region. Totally recommended.",
       trek: "Laguna Esmeralda",
+      avatar: null,
     },
   ]
 
@@ -64,10 +68,13 @@ export function TestimonialsSection() {
                 ))}
               </div>
               <p className="text-muted-foreground mb-4 leading-relaxed italic">"{testimonial.text}"</p>
-              <div className="border-t border-border pt-4">
-                <p className="font-bold">{testimonial.name}</p>
-                <p className="text-sm text-muted-foreground">{testimonial.location}</p>
-                <p className="text-sm text-primary font-medium mt-1">{testimonial.trek}</p>
+              <div className="border-t border-border pt-4 flex items-center gap-3">
+                <UserAvatar src={testimonial.avatar} name={testimonial.name} size="md" />
+                <div>
+                  <p className="font-bold">{testimonial.name}</p>
+                  <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                  <p className="text-sm text-primary font-medium mt-1">{testimonial.trek}</p>
+                </div>
               </div>
             </Card>
           ))}
