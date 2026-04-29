@@ -126,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ### AuthProvider (`contexts/auth-context.tsx`)
 
-Manages JWT-based authentication state. On mount, checks `localStorage` for an existing `auth_token` and validates it against the backend `/api/auth/me` endpoint.
+Manages JWT-based authentication state. On mount, calls the backend `/api/auth/me` endpoint to validate any existing session (relying on cookies sent by the browser); the token itself is held in memory only and is never written to `localStorage` or `sessionStorage`, to avoid XSS exfiltration.
 
 Exposed via `useAuth()` hook:
 
@@ -141,9 +141,10 @@ type AuthContextType = {
 ```
 
 Token storage:
-- Stored in `localStorage` under key `auth_token`
+- Held in memory only (a module-scoped variable in `lib/api.ts`); never persisted to `localStorage`/`sessionStorage` to mitigate XSS token theft
 - Automatically attached to API requests via the `apiFetch` helper
 - Cleared on logout or when `/api/auth/me` returns an error
+- The proper long-term storage is an `HttpOnly` + `Secure` + `SameSite` cookie set by the backend on login; that change is tracked separately
 
 Login/register flow:
 1. Call `login()` or `register()` with credentials
@@ -205,9 +206,8 @@ export async function apiFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
-  const token = typeof window !== "undefined"
-    ? localStorage.getItem("auth_token")
-    : null
+  // Held in memory only — never read from localStorage (XSS hardening).
+  const token = getAuthToken()
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -232,7 +232,7 @@ export async function apiFetch<T>(
 Key details:
 - Backend URL configured via `NEXT_PUBLIC_API_URL` env var (defaults to `http://localhost:3001`)
 - All requests include `Content-Type: application/json`
-- JWT token automatically included as `Bearer` token when present in localStorage
+- JWT token automatically included as `Bearer` token when present in the in-memory token store (set via `setAuthToken`)
 - Non-OK responses throw an `Error` with the server's `error` field or a default message
 - Generic type parameter `T` ensures type safety at call sites
 
