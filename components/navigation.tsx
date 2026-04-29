@@ -2,14 +2,24 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Globe } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Menu, X, Globe, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
+import { useAuth } from "@/contexts/auth-context"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { language, toggleLanguage } = useLanguage()
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await logout()
+    setIsOpen(false)
+    router.push("/")
+  }
 
   const navItems =
     language === "es"
@@ -58,10 +68,35 @@ export function Navigation() {
                 </Link>
               )
             ))}
-            <Button variant="ghost" size="icon" onClick={toggleLanguage} className="ml-auto">
+            <Button variant="ghost" size="icon" onClick={toggleLanguage}>
               <Globe className="h-5 w-5" />
               <span className="sr-only">Change language</span>
             </Button>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <User className="h-4 w-4" />
+                  <span>{user.firstName}</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-1" />
+                  {language === "es" ? "Salir" : "Logout"}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    {language === "es" ? "Iniciar sesión" : "Sign in"}
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm" className="bg-primary text-primary-foreground">
+                    {language === "es" ? "Registrarse" : "Sign up"}
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -103,6 +138,40 @@ export function Navigation() {
                 </Link>
               )
             ))}
+            <div className="border-t border-border mt-2 pt-2">
+              {user ? (
+                <>
+                  <div className="px-3 py-2 text-sm font-medium text-foreground flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    {user.firstName} {user.lastName}
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 text-base font-medium text-destructive hover:bg-accent rounded-md transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {language === "es" ? "Cerrar sesión" : "Log out"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="block px-3 py-2 text-base font-medium text-blue-600 hover:text-primary hover:bg-accent rounded-md transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {language === "es" ? "Iniciar sesión" : "Sign in"}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent rounded-md transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {language === "es" ? "Registrarse" : "Sign up"}
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
