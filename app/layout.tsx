@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Montserrat, Lato } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { LanguageProvider } from "@/contexts/language-context"
+import { AuthProvider } from "@/contexts/auth-context"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import "./globals.css"
 
@@ -52,7 +53,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${montserrat.variable} ${lato.variable} font-sans antialiased`}>
         <ScrollToTop />
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider><AuthProvider>{children}</AuthProvider></LanguageProvider>
         <Analytics />
       </body>
     </html>
