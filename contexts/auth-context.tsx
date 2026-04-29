@@ -17,22 +17,64 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// SECURITY: Auth tokens were previously persisted in localStorage, which exposes
+// them to any JavaScript executing in the page (XSS). The proper fix is to have
+// the backend issue the JWT as an httpOnly, Secure, SameSite=Strict cookie so
+// the token is unreachable from JS — but that requires backend changes outside
+// this repo. As a frontend-only mitigation we now store the token in
+// sessionStorage: it is still readable by JS on this origin (so XSS is still a
+// concern and the codebase must keep aggressively avoiding dangerouslySetInnerHTML,
+// untrusted React refs, etc.), but it is scoped per browser tab and cleared
+// when the tab closes, which materially shrinks the exfiltration window.
+// User profile data (non-secret) remains in localStorage so the UI can render
+// quickly on reload before re-validating with the server.
+const TOKEN_STORAGE_KEY = "auth_token"
+const USER_STORAGE_KEY = "auth_user"
+
+const tokenStorage = {
+  get(): string | null {
+    if (typeof window === "undefined") return null
+    return window.sessionStorage.getItem(TOKEN_STORAGE_KEY)
+  },
+  set(value: string) {
+    if (typeof window === "undefined") return
+    window.sessionStorage.setItem(TOKEN_STORAGE_KEY, value)
+    // Clear any legacy token that was previously persisted in localStorage so
+    // existing sessions don't leave a long-lived copy behind.
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+  },
+  clear() {
+    if (typeof window === "undefined") return
+    window.sessionStorage.removeItem(TOKEN_STORAGE_KEY)
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+  },
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Restore session from localStorage
+  // Restore session: token from sessionStorage (per-tab, cleared on tab close),
+  // user metadata from localStorage (non-secret).
   useEffect(() => {
-    const savedToken = localStorage.getItem("auth_token")
-    const savedUser = localStorage.getItem("auth_user")
+    // One-time migration: if a token is still sitting in localStorage from a
+    // previous build, move it to sessionStorage and remove the localStorage copy.
+    const legacyToken = localStorage.getItem(TOKEN_STORAGE_KEY)
+    if (legacyToken && !sessionStorage.getItem(TOKEN_STORAGE_KEY)) {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, legacyToken)
+    }
+    localStorage.removeItem(TOKEN_STORAGE_KEY)
+
+    const savedToken = tokenStorage.get()
+    const savedUser = localStorage.getItem(USER_STORAGE_KEY)
     if (savedToken && savedUser) {
       try {
         setToken(savedToken)
         setUser(JSON.parse(savedUser))
       } catch {
-        localStorage.removeItem("auth_token")
-        localStorage.removeItem("auth_user")
+        tokenStorage.clear()
+        localStorage.removeItem(USER_STORAGE_KEY)
       }
     }
     setIsLoading(false)
@@ -54,8 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setToken(data.token)
       setUser(data.user)
-      localStorage.setItem("auth_token", data.token)
-      localStorage.setItem("auth_user", JSON.stringify(data.user))
+      tokenStorage.set(data.token)
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user))
       return {}
     } catch {
       return { error: "Error de conexión con el servidor" }
@@ -78,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setToken(result.token)
       setUser(result.user)
-      localStorage.setItem("auth_token", result.token)
-      localStorage.setItem("auth_user", JSON.stringify(result.user))
+      tokenStorage.set(result.token)
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(result.user))
       return {}
     } catch {
       return { error: "Error de conexión con el servidor" }
@@ -89,15 +131,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setToken(null)
     setUser(null)
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_user")
+    tokenStorage.clear()
+    localStorage.removeItem(USER_STORAGE_KEY)
   }, [])
 
   const updateAvatar = useCallback((avatarUrl: string) => {
     setUser((prev) => {
       if (!prev) return prev
       const updated = { ...prev, avatarUrl }
-      localStorage.setItem("auth_user", JSON.stringify(updated))
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updated))
       return updated
     })
   }, [])

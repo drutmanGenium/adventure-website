@@ -32,20 +32,65 @@ export function ProfileView() {
 
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
 
+  // Maximum avatar size in bytes (2 MB). Must match backend enforcement.
+  const MAX_AVATAR_BYTES = 2 * 1024 * 1024
+  const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const
+
+  // Verify a file's leading bytes match a known image signature (magic bytes).
+  // This is defense-in-depth on top of the MIME-type and size checks; client-side
+  // checks alone are bypassable, so the backend MUST also validate type, size,
+  // and content before storing the file.
+  const verifyImageSignature = async (file: File, mimeType: string): Promise<boolean> => {
+    const header = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+    if (header.length < 4) return false
+    const startsWith = (sig: number[]) => sig.every((b, i) => header[i] === b)
+    switch (mimeType) {
+      case "image/jpeg":
+        // FF D8 FF
+        return startsWith([0xff, 0xd8, 0xff])
+      case "image/png":
+        // 89 50 4E 47 0D 0A 1A 0A
+        return startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+      case "image/gif":
+        // "GIF87a" or "GIF89a"
+        return startsWith([0x47, 0x49, 0x46, 0x38]) && (header[4] === 0x37 || header[4] === 0x39) && header[5] === 0x61
+      case "image/webp":
+        // "RIFF" .... "WEBP"
+        return (
+          startsWith([0x52, 0x49, 0x46, 0x46]) &&
+          header[8] === 0x57 &&
+          header[9] === 0x45 &&
+          header[10] === 0x42 &&
+          header[11] === 0x50
+        )
+      default:
+        return false
+    }
+  }
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type as (typeof ALLOWED_AVATAR_TYPES)[number])) {
       setError(t("Tipo de imagen no permitido. Usa JPEG, PNG, WebP o GIF", "Image type not allowed. Use JPEG, PNG, WebP or GIF"))
       return
     }
 
-    // Validate file size (2MB)
-    if (file.size > 2 * 1024 * 1024) {
+    // Validate file size (2MB). NOTE: client-side size checks are easily bypassed;
+    // the backend MUST re-validate this limit before persisting the upload.
+    if (file.size > MAX_AVATAR_BYTES) {
       setError(t("La imagen no debe superar los 2MB", "Image must be under 2MB"))
+      return
+    }
+
+    // Defense-in-depth: verify the file's actual bytes match a known image
+    // signature so a renamed/non-image file (or a polyglot) is rejected before
+    // we send it. The server MUST still enforce its own content validation.
+    const signatureOk = await verifyImageSignature(file, file.type)
+    if (!signatureOk) {
+      setError(t("Archivo de imagen no válido", "Invalid image file"))
       return
     }
 
@@ -57,6 +102,13 @@ export function ProfileView() {
       reader.onload = async () => {
         const base64 = (reader.result as string).split(",")[1]
 
+        // SECURITY: Avatar payloads are sent base64-encoded as JSON for backwards
+        // compatibility with the existing backend API. The backend MUST validate
+        // (a) the decoded MIME type matches an allowlist, (b) the decoded byte
+        // length is within MAX_AVATAR_BYTES (after accounting for base64 inflation),
+        // and (c) the decoded bytes parse as a real image. A future improvement is
+        // to switch this endpoint to multipart/form-data so streaming size limits
+        // can be enforced before the body is fully buffered server-side.
         const res = await fetch(`${API_URL}/api/upload/avatar`, {
           method: "POST",
           headers: {
