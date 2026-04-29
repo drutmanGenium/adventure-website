@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Heart, Award, Shield, Users, Mountain, Compass } from "lucide-react"
+import { UserAvatar } from "@/components/user-avatar"
 
 const values = [
   {
@@ -150,8 +151,16 @@ export function AboutContent() {
                     alt={member.name}
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute -bottom-6 left-6">
+                    <UserAvatar
+                      src={member.image}
+                      name={member.name}
+                      size="lg"
+                      className="border-4 border-background shadow-md"
+                    />
+                  </div>
                 </div>
-                <div className="p-6">
+                <div className="p-6 pt-10">
                   <h3 className="text-xl font-bold mb-1">{member.name}</h3>
                   <p className="text-primary font-medium mb-3">{member.role}</p>
                   <p className="text-sm text-muted-foreground leading-relaxed">{member.description}</p>
