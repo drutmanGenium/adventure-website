@@ -95,3 +95,24 @@ export interface ContactRequest {
   subject: string
   message: string
 }
+
+export interface User {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  avatarUrl: string | null
+  createdAt: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface RegisterRequest {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+}
