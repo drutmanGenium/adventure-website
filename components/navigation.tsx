@@ -2,14 +2,24 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Globe } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Menu, X, Globe, LogIn, LogOut, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
+import { useAuth } from "@/contexts/auth-context"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { language, toggleLanguage } = useLanguage()
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await logout()
+    setIsOpen(false)
+    router.push("/")
+  }
 
   const navItems =
     language === "es"
@@ -58,10 +68,34 @@ export function Navigation() {
                 </Link>
               )
             ))}
-            <Button variant="ghost" size="icon" onClick={toggleLanguage} className="ml-auto">
+            <Button variant="ghost" size="icon" onClick={toggleLanguage}>
               <Globe className="h-5 w-5" />
               <span className="sr-only">Change language</span>
             </Button>
+
+            {/* Auth buttons */}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/reservar"
+                  className="flex items-center gap-1.5 text-sm font-medium text-foreground"
+                >
+                  <UserCircle className="h-5 w-5 text-primary" />
+                  <span className="max-w-[120px] truncate">{user.firstName}</span>
+                </Link>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-1.5" />
+                  {language === "es" ? "Salir" : "Log out"}
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="default" size="sm">
+                  <LogIn className="h-4 w-4 mr-1.5" />
+                  {language === "es" ? "Ingresar" : "Log in"}
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -103,6 +137,48 @@ export function Navigation() {
                 </Link>
               )
             ))}
+
+            {/* Mobile auth section */}
+            <div className="border-t border-border mt-2 pt-2">
+              {user ? (
+                <>
+                  <div className="px-3 py-2 flex items-center gap-2 text-foreground">
+                    <UserCircle className="h-5 w-5 text-primary" />
+                    <span className="font-medium">{user.firstName} {user.lastName}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 text-base font-medium text-destructive hover:bg-accent rounded-md transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {language === "es" ? "Cerrar sesión" : "Log out"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent rounded-md transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <LogIn className="h-4 w-4" />
+                      {language === "es" ? "Iniciar Sesión" : "Log In"}
+                    </span>
+                  </Link>
+                  <Link
+                    href="/registro"
+                    className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent rounded-md transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <UserCircle className="h-4 w-4" />
+                      {language === "es" ? "Crear Cuenta" : "Sign Up"}
+                    </span>
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
