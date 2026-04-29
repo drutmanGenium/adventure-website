@@ -2,14 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Globe } from "lucide-react"
+import { Menu, X, Globe, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
+import { useAuth } from "@/contexts/auth-context"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { language, toggleLanguage } = useLanguage()
+  const { user, logout } = useAuth()
 
   const navItems =
     language === "es"
@@ -62,6 +64,27 @@ export function Navigation() {
               <Globe className="h-5 w-5" />
               <span className="sr-only">Change language</span>
             </Button>
+
+            {/* Auth section */}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <User className="h-4 w-4" />
+                  <span>{user.firstName}</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={logout}>
+                  <LogOut className="h-4 w-4 mr-1" />
+                  {language === "es" ? "Salir" : "Logout"}
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="default" size="sm">
+                  <User className="h-4 w-4 mr-1" />
+                  {language === "es" ? "Ingresar" : "Sign In"}
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -103,6 +126,38 @@ export function Navigation() {
                 </Link>
               )
             ))}
+
+            {/* Mobile auth section */}
+            <div className="border-t border-border pt-2 mt-2">
+              {user ? (
+                <>
+                  <div className="px-3 py-2 text-sm font-medium text-foreground flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    {user.firstName} {user.lastName}
+                  </div>
+                  <button
+                    onClick={() => { logout(); setIsOpen(false) }}
+                    className="block w-full text-left px-3 py-2 text-base font-medium text-destructive hover:bg-accent rounded-md transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      {language === "es" ? "Cerrar sesión" : "Sign out"}
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent rounded-md transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <span className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    {language === "es" ? "Iniciar Sesión" : "Sign In"}
+                  </span>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}
