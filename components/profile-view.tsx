@@ -8,6 +8,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
 import { useAuth } from "@/contexts/auth-context"
+import {
+  ALLOWED_AVATAR_MIME_TYPES,
+  safeAvatarSrc,
+  validateAvatarDataUrl,
+} from "@/lib/avatar"
 
 export function ProfileView() {
   const { t } = useLanguage()
@@ -35,6 +40,11 @@ export function ProfileView() {
   if (!user) return null
 
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  // Sanitize avatar URL at render time as defense-in-depth: even if a
+  // malicious value bypassed upload validation (e.g. injected directly into
+  // storage), it cannot reach an <img src=…> attribute unless it parses as a
+  // safe http(s):// URL or a base64 data URL with an allowlisted image MIME.
+  const safeAvatar = safeAvatarSrc(user.avatarUrl)
 
   function handleFileSelect() {
     fileInputRef.current?.click()
@@ -44,8 +54,13 @@ export function ProfileView() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    // Validate file type against a strict allowlist (not a `image/*` prefix
+    // check, which would let through e.g. `image/svg+xml` -- SVGs can contain
+    // <script> and would re-introduce the XSS vector this code is guarding
+    // against).
+    if (
+      !(ALLOWED_AVATAR_MIME_TYPES as readonly string[]).includes(file.type)
+    ) {
       setError(t("Por favor seleccioná una imagen válida", "Please select a valid image"))
       return
     }
@@ -61,8 +76,13 @@ export function ProfileView() {
     setUploading(true)
 
     try {
-      // Read file as base64 data URL
-      const dataUrl = await readFileAsDataUrl(file)
+      // Read file as base64 data URL, then verify (a) the declared MIME is in
+      // our allowlist, (b) the decoded bytes' magic-byte signature matches
+      // that MIME, and (c) the bytes parse as a real image. This blocks
+      // payloads like `data:text/html,<script>...</script>` from ever
+      // reaching the avatar rendering path.
+      const rawDataUrl = await readFileAsDataUrl(file)
+      const dataUrl = await validateAvatarDataUrl(rawDataUrl)
 
       const result = await updateAvatar(dataUrl)
       if (result.success) {
@@ -118,8 +138,8 @@ export function ProfileView() {
           <div className="flex flex-col sm:flex-row items-center gap-6">
             {/* Avatar preview */}
             <Avatar className="h-28 w-28 border-4 border-muted">
-              {user.avatarUrl ? (
-                <AvatarImage src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+              {safeAvatar ? (
+                <AvatarImage src={safeAvatar} alt={`${user.firstName} ${user.lastName}`} />
               ) : null}
               <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-medium">
                 {initials}
@@ -145,12 +165,12 @@ export function ProfileView() {
                 <Upload className="h-4 w-4" />
                 {uploading
                   ? t("Subiendo...", "Uploading...")
-                  : user.avatarUrl
+                  : safeAvatar
                     ? t("Cambiar imagen", "Change image")
                     : t("Subir imagen", "Upload image")}
               </Button>
 
-              {user.avatarUrl && (
+              {safeAvatar && (
                 <Button
                   onClick={handleRemoveAvatar}
                   disabled={uploading}

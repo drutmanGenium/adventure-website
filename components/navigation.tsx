@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/contexts/language-context"
 import { useAuth } from "@/contexts/auth-context"
 import { createWhatsAppHref } from "@/lib/whatsapp"
+import { safeAvatarSrc } from "@/lib/avatar"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -222,14 +223,19 @@ function UserAvatarMenu({
   t: (es: string, en: string) => string
 }) {
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  // Sanitize avatar URL at render time. `safeAvatarSrc` rejects anything that
+  // is not an http(s) URL or an allowlisted base64 image data URL, blocking
+  // payloads like `data:text/html,<script>...</script>` even if they were
+  // somehow persisted server-side.
+  const safeAvatar = safeAvatarSrc(user.avatarUrl)
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
           <Avatar className="h-9 w-9">
-            {user.avatarUrl ? (
-              <AvatarImage src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+            {safeAvatar ? (
+              <AvatarImage src={safeAvatar} alt={`${user.firstName} ${user.lastName}`} />
             ) : null}
             <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
               {initials}
