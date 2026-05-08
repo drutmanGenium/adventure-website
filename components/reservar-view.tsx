@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation"
 import { useMemo, useState, useRef, useCallback } from "react"
+import Image from "next/image"
 import { ACTIVITIES } from "@/components/actividades-view"
 import { Button } from "@/components/ui/button"
 import { Calendar, ChevronLeft, Users } from "lucide-react"
@@ -469,12 +470,13 @@ export function ReservarView() {
 
             {/* Activity image + title */}
             <div className="flex items-start gap-4 p-5 border-b border-border">
-              <div className="w-24 h-20 rounded-xl overflow-hidden bg-muted shrink-0">
-                <img
+              <div className="relative w-24 h-20 rounded-xl overflow-hidden bg-muted shrink-0">
+                <Image
                   src={activity.cover_image}
                   alt={activity.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => { e.currentTarget.src = "/placeholder.jpg" }}
+                  fill
+                  className="object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/placeholder.jpg" }}
                 />
               </div>
               <div className="min-w-0">

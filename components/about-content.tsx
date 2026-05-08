@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Heart, Award, Shield, Users, Mountain, Compass } from "lucide-react"
@@ -57,7 +58,7 @@ export function AboutContent() {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative h-[50vh] overflow-hidden">
-        <img src="/patagonia-mountain-team-hiking.jpg" alt="Nuestro equipo" className="w-full h-full object-cover" />
+        <Image src="/patagonia-mountain-team-hiking.jpg" alt="Nuestro equipo" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="max-w-7xl mx-auto">
@@ -145,10 +146,11 @@ export function AboutContent() {
                 className="overflow-hidden hover:shadow-xl transition-all border-2 hover:border-primary/50"
               >
                 <div className="relative h-64">
-                  <img
+                  <Image
                     src={member.image || "/placeholder.svg"}
                     alt={member.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </div>
                 <div className="p-6">

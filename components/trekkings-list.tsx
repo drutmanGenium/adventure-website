@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Clock, Users, Calendar, ChevronRight, Filter } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 const trekkings = [
@@ -233,10 +234,11 @@ export function TrekkingsList() {
             >
               {/* Image */}
               <div className="relative h-56 overflow-hidden">
-                <img
+                <Image
                   src={trek.image || "/placeholder.svg"}
                   alt={trek.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute top-4 right-4">
                   <Badge className={`${difficultyColors[trek.difficulty as keyof typeof difficultyColors]} border`}>

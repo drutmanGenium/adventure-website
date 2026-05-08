@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Mountain } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
+import Image from "next/image"
 import Link from "next/link"
 
 export function HeroSection() {
@@ -16,10 +17,12 @@ export function HeroSection() {
           clipPath: "polygon(0 0, 100% 0, 100% 95%, 0 100%)",
         }}
       >
-        <img
+        <Image
           src="/images/design-mode/laguna-esmeralda-ushuaia_0_202008261257020.png(1).jpeg"
           alt={t("Montañas de Patagonia", "Patagonia Mountains")}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
       </div>
