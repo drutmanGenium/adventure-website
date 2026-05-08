@@ -409,34 +409,34 @@ function SearchBar({
         {/* Where */}
         <button
           onClick={() => toggle("where")}
-          className={`flex flex-col items-start px-6 py-3 rounded-l-full hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "where" ? "bg-muted/60" : ""}`}
+          className={`flex flex-col items-start px-3 sm:px-6 py-3 rounded-l-full hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "where" ? "bg-muted/60" : ""}`}
         >
           <span className="text-xs font-semibold text-foreground">Actividad</span>
-          <span className="text-sm text-muted-foreground truncate max-w-[160px]">{wherLabel}</span>
+          <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-full sm:max-w-[160px]">{wherLabel}</span>
         </button>
 
         {/* When */}
         <button
           onClick={() => toggle("when")}
-          className={`flex flex-col items-start px-6 py-3 hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "when" ? "bg-muted/60" : ""}`}
+          className={`flex flex-col items-start px-3 sm:px-6 py-3 hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "when" ? "bg-muted/60" : ""}`}
         >
           <span className="text-xs font-semibold text-foreground">Fecha</span>
-          <span className="text-sm text-muted-foreground truncate">{whenLabel}</span>
+          <span className="text-xs sm:text-sm text-muted-foreground truncate">{whenLabel}</span>
         </button>
 
         {/* Who */}
         <button
           onClick={() => toggle("who")}
-          className={`flex flex-col items-start px-6 py-3 hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "who" ? "bg-muted/60" : ""}`}
+          className={`flex flex-col items-start px-3 sm:px-6 py-3 hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "who" ? "bg-muted/60" : ""}`}
         >
           <span className="text-xs font-semibold text-foreground">Personas</span>
-          <span className="text-sm text-muted-foreground">{whoLabel}</span>
+          <span className="text-xs sm:text-sm text-muted-foreground">{whoLabel}</span>
         </button>
 
         {/* Search button */}
-        <div className="flex items-center px-3 pr-2">
+        <div className="flex items-center px-2 sm:px-3 pr-1.5 sm:pr-2">
           <button
-            className="bg-primary text-primary-foreground rounded-full p-3 hover:bg-primary/90 transition-colors"
+            className="bg-primary text-primary-foreground rounded-full p-2.5 sm:p-3 hover:bg-primary/90 transition-colors"
             aria-label="Buscar actividades"
             onClick={() => setOpenPanel(null)}
           >
@@ -460,7 +460,7 @@ function SearchBar({
 
       {/* Where dropdown */}
       {openPanel === "where" && (
-        <div className="absolute top-[calc(100%+12px)] left-0 bg-card border border-border rounded-3xl shadow-xl z-50 p-4 w-72">
+        <div className="absolute top-[calc(100%+12px)] left-0 right-0 sm:right-auto bg-card border border-border rounded-3xl shadow-xl z-50 p-4 sm:w-72 max-h-[60vh] overflow-y-auto">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
             Actividad
           </p>
@@ -469,7 +469,7 @@ function SearchBar({
               <button
                 key={value}
                 onClick={() => { setCategory(value); setOpenPanel(null) }}
-                className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors
+                className={`text-left px-4 py-3 sm:py-2.5 rounded-xl text-sm font-medium transition-colors
                   ${category === value
                     ? "bg-primary/10 text-primary"
                     : "hover:bg-muted text-foreground"
@@ -484,7 +484,7 @@ function SearchBar({
 
       {/* When dropdown */}
       {openPanel === "when" && (
-        <div className="absolute top-[calc(100%+12px)] left-[calc(33%-20px)] bg-card border border-border rounded-3xl shadow-xl z-50">
+        <div className="absolute top-[calc(100%+12px)] left-0 right-0 sm:left-[calc(33%-20px)] sm:right-auto bg-card border border-border rounded-3xl shadow-xl z-50">
           <MiniCalendar
             startDate={startDate}
             endDate={endDate}
@@ -494,13 +494,13 @@ function SearchBar({
             <div className="px-4 pb-4 flex gap-2">
               <button
                 onClick={() => setDates(null, null)}
-                className="flex-1 py-2 text-sm border border-border rounded-xl hover:bg-muted transition-colors"
+                className="flex-1 py-2.5 sm:py-2 text-sm border border-border rounded-xl hover:bg-muted transition-colors"
               >
                 Borrar
               </button>
               <button
                 onClick={() => setOpenPanel(null)}
-                className="flex-1 py-2 text-sm bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium"
+                className="flex-1 py-2.5 sm:py-2 text-sm bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium"
               >
                 Aplicar
               </button>
@@ -511,7 +511,7 @@ function SearchBar({
 
       {/* Who dropdown */}
       {openPanel === "who" && (
-        <div className="absolute top-[calc(100%+12px)] right-16 bg-card border border-border rounded-3xl shadow-xl z-50 p-5 w-64">
+        <div className="absolute top-[calc(100%+12px)] left-0 right-0 sm:left-auto sm:right-16 bg-card border border-border rounded-3xl shadow-xl z-50 p-5 sm:w-64">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold text-sm">Personas</p>
@@ -520,7 +520,7 @@ function SearchBar({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setGuests(Math.max(1, guests - 1))}
-                className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors text-lg font-light disabled:opacity-30"
+                className="h-10 w-10 sm:h-8 sm:w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors text-lg font-light disabled:opacity-30"
                 disabled={guests <= 1}
               >
                 −
@@ -528,7 +528,7 @@ function SearchBar({
               <span className="font-semibold w-4 text-center">{guests}</span>
               <button
                 onClick={() => setGuests(guests + 1)}
-                className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors text-lg font-light"
+                className="h-10 w-10 sm:h-8 sm:w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors text-lg font-light"
               >
                 +
               </button>
