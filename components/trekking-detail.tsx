@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { MapPin, Clock, Users, Calendar, Mountain, Check, X, Info, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
+import Script from "next/script"
 import { useState, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ACTIVITIES, dateToIso } from "@/components/actividades-view"
@@ -334,6 +335,107 @@ export function TrekkingDetail({ id }: { id: string }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(initialDate)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
+  // JSON-LD structured data for SEO
+  const jsonLd = useMemo(() => {
+    if (!trekking) return null
+
+    const difficultyMap: Record<string, string> = {
+      "Fácil": "https://schema.org/EasyDifficulty",
+      "Moderado": "https://schema.org/ModerateDifficulty",
+      "Avanzado": "https://schema.org/DifficultDifficulty",
+    }
+
+    const graph: Record<string, unknown>[] = [
+      {
+        "@type": "TouristTrip",
+        "name": trekking.title,
+        "description": trekking.description,
+        "touristType": trekking.type,
+        "url": `https://patagoniatrek.com.ar/trekkings/${id}`,
+        "image": trekking.image,
+        ...(difficultyMap[trekking.difficulty] && {
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "difficulty",
+            "value": trekking.difficulty,
+          },
+        }),
+        "itinerary": {
+          "@type": "ItemList",
+          "itemListElement": trekking.itinerary.map((step: { day: string; title: string; description: string }, i: number) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": `${step.day}: ${step.title}`,
+            "description": step.description,
+          })),
+        },
+        ...(activityData && {
+          "offers": {
+            "@type": "Offer",
+            "price": activityData.price_from,
+            "priceCurrency": activityData.currency,
+            "availability": futureDates.length > 0
+              ? "https://schema.org/InStock"
+              : "https://schema.org/SoldOut",
+            "url": `https://patagoniatrek.com.ar/trekkings/${id}`,
+            "validFrom": futureDates[0] ?? undefined,
+          },
+        }),
+        "provider": {
+          "@type": "TourOperator",
+          "name": "Patagonia Trek",
+          "url": "https://patagoniatrek.com.ar",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Ushuaia",
+            "addressRegion": "Tierra del Fuego",
+            "addressCountry": "AR",
+          },
+        },
+        "location": {
+          "@type": "Place",
+          "name": trekking.location,
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Ushuaia",
+            "addressRegion": "Tierra del Fuego",
+            "addressCountry": "AR",
+          },
+        },
+      },
+    ]
+
+    // Add BreadcrumbList for navigation context
+    graph.push({
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://patagoniatrek.com.ar",
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Actividades",
+          "item": "https://patagoniatrek.com.ar/actividades",
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": trekking.title,
+          "item": `https://patagoniatrek.com.ar/trekkings/${id}`,
+        },
+      ],
+    })
+
+    return {
+      "@context": "https://schema.org",
+      "@graph": graph,
+    }
+  }, [trekking, activityData, futureDates, id])
+
   if (!trekking) {
     return (
       <div className="py-20 px-4 text-center">
@@ -355,6 +457,14 @@ export function TrekkingDetail({ id }: { id: string }) {
   }
 
   return (
+    <>
+      {jsonLd && (
+        <Script
+          id={`jsonld-trekking-${id}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
     <div className="min-h-screen bg-background">
       {/* Hero Image */}
       <div className="relative h-[60vh] overflow-hidden">
@@ -594,5 +704,6 @@ export function TrekkingDetail({ id }: { id: string }) {
         />
       )}
     </div>
+    </>
   )
 }
