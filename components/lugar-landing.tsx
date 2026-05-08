@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Navigation } from "@/components/navigation"
@@ -125,12 +126,14 @@ function GalleryCarousel({ images }: { images: { src: string; alt: string }[] })
       >
         {loopedImages.map((img, i) => (
           <div key={`${img.src}-${i}`} className="flex-shrink-0 rounded-xl overflow-hidden" style={{ height: "240px" }}>
-            <img
+            <Image
               src={img.src}
               alt={img.alt}
+              width={360}
+              height={240}
               className="h-full w-auto max-w-none object-cover pointer-events-none"
               draggable={false}
-              onError={(e) => { e.currentTarget.src = "/placeholder.jpg" }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/placeholder.jpg" }}
             />
           </div>
         ))}
@@ -191,10 +194,12 @@ export function LugarLanding({ data }: Props) {
 
         {/* ① Hero */}
         <section className="relative h-[78vh] min-h-[540px] flex items-end">
-          <img
+          <Image
             src={data.heroImage}
             alt={data.heroImageAlt}
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           {/* Stronger overlay for readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
