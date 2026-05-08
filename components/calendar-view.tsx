@@ -7,6 +7,7 @@ import { MapPin, Clock, Users, ChevronRight, X } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { useLanguage } from "@/contexts/language-context"
 
 // ─── Difficulty icons (neutral SVG, no color) ───────────────────────────────
 
@@ -114,6 +115,7 @@ calendarEvents.forEach((e) => { TITLE_TO_SLUG[e.title] = e.id })
 export function CalendarView() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { t, language } = useLanguage()
 
   // Resolve initial state from URL query params
   const initialActivity = useMemo(() => {
@@ -233,24 +235,24 @@ export function CalendarView() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Próximas Salidas</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Calendario de Expediciones</h1>
+          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">{t("Próximas Salidas", "Upcoming Departures")}</Badge>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t("Calendario de Expediciones", "Expedition Calendar")}</h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-            Elegí la fecha que mejor se adapte a tus planes
+            {t("Elegí la fecha que mejor se adapte a tus planes", "Choose the date that best fits your plans")}
           </p>
         </div>
 
         {/* Filter Panel */}
         <div className="bg-card border rounded-2xl p-6 mb-8 shadow-sm">
           <div className="flex items-center justify-between mb-5">
-            <p className="text-sm font-semibold text-foreground">Elegir salidas</p>
+            <p className="text-sm font-semibold text-foreground">{t("Elegir salidas", "Choose departures")}</p>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
-                Limpiar filtros
+                {t("Limpiar filtros", "Clear filters")}
               </button>
             )}
           </div>
@@ -260,7 +262,7 @@ export function CalendarView() {
             {/* Row 1 — Mes */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Mes
+                {t("Mes", "Month")}
               </label>
               <div className="relative">
                 <select
@@ -268,7 +270,7 @@ export function CalendarView() {
                   onChange={(e) => handleMonthChange(e.target.value)}
                   className={selectClass}
                 >
-                  <option value={ALL_MONTHS_KEY}>Todos los meses</option>
+                  <option value={ALL_MONTHS_KEY}>{t("Todos los meses", "All months")}</option>
                   {availableMonthYears.map(({ key, month, year }) => (
                     <option key={key} value={key}>
                       {month} {year}
@@ -282,7 +284,7 @@ export function CalendarView() {
             {/* Row 2 — Actividad (dependent) */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {"Lugar\n"}
+                {t("Lugar", "Location")}
               </label>
               <div className="relative">
                 <select
@@ -290,7 +292,7 @@ export function CalendarView() {
                   onChange={(e) => handleActivityChange(e.target.value)}
                   className={selectClass}
                 >
-                  <option value="Todas">Todas</option>
+                  <option value="Todas">{t("Todas", "All")}</option>
                   {Object.entries(activitiesInMonth).map(([title, count]) => (
                     <option key={title} value={title}>
                       {title} ({count})
@@ -301,7 +303,7 @@ export function CalendarView() {
               </div>
               {activityResetMsg && (
                 <p className="text-xs text-muted-foreground italic">
-                  No hay salidas de esa actividad en el mes seleccionado.
+                  {t("No hay salidas de esa actividad en el mes seleccionado.", "No departures for that activity in the selected month.")}
                 </p>
               )}
             </div>
@@ -309,7 +311,7 @@ export function CalendarView() {
             {/* Row 3 — Dificultad (segmented, persistent) */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Dificultad
+                {t("Dificultad", "Difficulty")}
               </label>
               <div className="flex rounded-lg border border-input overflow-hidden bg-background divide-x divide-border h-[38px]">
                 {Object.entries(DIFFICULTY_CONFIG).map(([key, { label, icon: Icon }]) => {
@@ -343,7 +345,7 @@ export function CalendarView() {
             {filteredEvents.map((event, index) => {
               const dateObj  = new Date(event.date + "T12:00:00")
               const dayNum   = dateObj.getDate()
-              const monthShort = dateObj.toLocaleDateString("es", { month: "short" }).toUpperCase().replace(".", "")
+              const monthShort = dateObj.toLocaleDateString(language === "es" ? "es" : "en", { month: "short" }).toUpperCase().replace(".", "")
               const lowSpots = event.spotsLeft <= 3
               const DiffIcon = DIFFICULTY_CONFIG[event.difficulty]?.icon
 
