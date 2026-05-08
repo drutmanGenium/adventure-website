@@ -11,6 +11,14 @@ import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
 import { useState } from "react"
 
+function isValidEmail(v: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+}
+
+interface FormErrors {
+  email?: string
+}
+
 export function ContactForm() {
   const [formData, setFormData] = useState({
     name: "",
@@ -19,19 +27,47 @@ export function ContactForm() {
     subject: "",
     message: "",
   })
+  const [errors, setErrors] = useState<FormErrors>({})
+
+  const validateEmail = (email: string): FormErrors => {
+    const errs: FormErrors = {}
+    if (!email.trim()) {
+      errs.email = "El email es obligatorio."
+    } else if (!isValidEmail(email)) {
+      errs.email = "Ingresá un email válido."
+    }
+    return errs
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const emailErrors = validateEmail(formData.email)
+    if (Object.keys(emailErrors).length > 0) {
+      setErrors(emailErrors)
+      return
+    }
     // Handle form submission
     console.log("Form submitted:", formData)
     alert("¡Gracias por contactarnos! Te responderemos pronto.")
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     })
+    if (name === "email" && errors.email) {
+      const emailErrors = validateEmail(value)
+      setErrors(emailErrors)
+    }
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.name === "email") {
+      const emailErrors = validateEmail(e.target.value)
+      setErrors(emailErrors)
+    }
   }
 
   return (
@@ -152,8 +188,13 @@ export function ContactForm() {
                       placeholder="juan@ejemplo.com"
                       value={formData.email}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       required
+                      className={errors.email ? "border-red-500" : ""}
                     />
+                    {errors.email && (
+                      <p className="text-sm text-red-500">{errors.email}</p>
+                    )}
                   </div>
                 </div>
 
