@@ -8,8 +8,9 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import { useState } from "react"
+import { createContact, ApiError } from "@/lib/api"
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -20,11 +21,33 @@ export function ContactForm() {
     message: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log("Form submitted:", formData)
-    alert("¡Gracias por contactarnos! Te responderemos pronto.")
+    setSubmitting(true)
+    setApiError(null)
+
+    try {
+      await createContact({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+      })
+      setSubmitted(true)
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setApiError(err.message)
+      } else {
+        setApiError("No pudimos enviar tu mensaje. Verificá tu conexión e intentá nuevamente.")
+      }
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -32,16 +55,17 @@ export function ContactForm() {
       ...formData,
       [e.target.name]: e.target.value,
     })
+    if (apiError) setApiError(null)
   }
 
   return (
-    <section className="py-20 px-4 min-h-screen bg-background">
+    <section className="py-12 sm:py-20 px-4 min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 sm:mb-12">
           <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Contacto</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Hablemos de tu próxima aventura</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-balance">Hablemos de tu próxima aventura</h1>
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
             Estamos aquí para responder todas tus preguntas y ayudarte a planificar el trekking perfecto
           </p>
         </div>
@@ -127,80 +151,136 @@ export function ContactForm() {
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <Card className="p-8 border-2">
-              <h2 className="text-2xl font-bold mb-6">Envianos un mensaje</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre completo *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      placeholder="Juan Pérez"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                    />
+            <Card className="p-5 sm:p-8 border-2">
+              {submitted ? (
+                <div className="py-12 text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="h-8 w-8 text-primary" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="juan@ejemplo.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                  <h2 className="text-2xl font-bold mb-3">Mensaje enviado</h2>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Recibimos tu consulta y te responderemos a <strong>{formData.email}</strong> lo antes posible.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSubmitted(false)
+                      setFormData({ name: "", email: "", phone: "", subject: "", message: "" })
+                    }}
+                  >
+                    Enviar otro mensaje
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold mb-6">Envianos un mensaje</h2>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Teléfono</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+54 9 11 2345-6789"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
-                  </div>
+                  {/* API error banner */}
+                  {apiError && (
+                    <div className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+                      <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{apiError}</p>
+                    </div>
+                  )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Asunto *</Label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      placeholder="Consulta sobre Fitz Roy"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Nombre completo *</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          autoComplete="name"
+                          placeholder="Juan Pérez"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                          className="text-base sm:text-sm"
+                        />
+                      </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Mensaje *</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    placeholder="Contanos sobre tu experiencia de trekking previa, nivel de fitness, fechas preferidas, y cualquier pregunta que tengas..."
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={6}
-                    required
-                  />
-                </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          placeholder="juan@ejemplo.com"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                          className="text-base sm:text-sm"
+                        />
+                      </div>
+                    </div>
 
-                <Button type="submit" size="lg" className="w-full md:w-auto bg-primary text-primary-foreground">
-                  <Send className="mr-2 h-5 w-5" />
-                  Enviar Mensaje
-                </Button>
-              </form>
+                    <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Teléfono</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          placeholder="+54 9 11 2345-6789"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          className="text-base sm:text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="subject">Asunto *</Label>
+                        <Input
+                          id="subject"
+                          name="subject"
+                          placeholder="Consulta sobre trekking"
+                          value={formData.subject}
+                          onChange={handleChange}
+                          required
+                          className="text-base sm:text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="message">Mensaje *</Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        placeholder="Contanos sobre tu experiencia de trekking previa, nivel de fitness, fechas preferidas, y cualquier pregunta que tengas..."
+                        value={formData.message}
+                        onChange={handleChange}
+                        rows={6}
+                        required
+                        className="text-base sm:text-sm"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full sm:w-auto bg-primary text-primary-foreground"
+                      disabled={submitting}
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Enviando…
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-5 w-5" />
+                          Enviar Mensaje
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </>
+              )}
             </Card>
           </div>
         </div>
@@ -208,7 +288,7 @@ export function ContactForm() {
         {/* FAQ Section */}
         <div className="mt-16">
           <h2 className="text-3xl font-bold mb-8 text-center">Preguntas Frecuentes</h2>
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
             <Card className="p-6 border-2">
               <h3 className="font-bold mb-2">¿Cuándo es la mejor época para hacer trekking?</h3>
               <p className="text-muted-foreground text-sm">

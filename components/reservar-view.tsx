@@ -4,8 +4,10 @@ import { useSearchParams } from "next/navigation"
 import { useMemo, useState, useRef, useCallback } from "react"
 import { ACTIVITIES } from "@/components/actividades-view"
 import { Button } from "@/components/ui/button"
-import { Calendar, ChevronLeft, Users } from "lucide-react"
+import { Calendar, ChevronLeft, Users, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { createBooking, ApiError } from "@/lib/api"
+import type { CreateBookingResponse } from "@/lib/api"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -88,7 +90,7 @@ function Field({
 }
 
 const inputClass = (error?: string) =>
-  `w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 transition-colors ${
+  `w-full border rounded-xl px-4 py-3 text-base sm:text-sm bg-background focus:outline-none focus:ring-2 transition-colors ${
     error
       ? "border-destructive focus:ring-destructive/20 focus:border-destructive"
       : "border-border focus:ring-primary/20 focus:border-primary"
@@ -98,7 +100,7 @@ const inputClass = (error?: string) =>
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+    <section className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-foreground mb-5">{title}</h2>
       {children}
     </section>
@@ -136,7 +138,9 @@ export function ReservarView() {
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Partial<Record<keyof BookingForm, boolean>>>({})
-  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [bookingResult, setBookingResult] = useState<CreateBookingResponse | null>(null)
 
   // Refs for scroll-to-error
   const firstNameRef = useRef<HTMLInputElement>(null)
@@ -153,6 +157,8 @@ export function ReservarView() {
     if (touched[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
+    // Clear api error on any change
+    if (apiError) setApiError(null)
   }
 
   const blur = (field: keyof BookingForm) => () => {
@@ -196,7 +202,7 @@ export function ReservarView() {
     return fields.reduce((acc, f) => ({ ...acc, ...validateField(f, values) }), {} as FormErrors)
   }, [validateField])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const allErrors = validateAll(form)
     setErrors(allErrors)
     setTouched({ firstName: true, lastName: true, email: true, phone: true, pickupAddress: true, city: true, hotelName: true })
@@ -217,7 +223,38 @@ export function ReservarView() {
       return
     }
 
-    setSubmitted(true)
+    if (!activity || !date) return
+
+    setSubmitting(true)
+    setApiError(null)
+
+    try {
+      const result = await createBooking({
+        activityId: activity.id,
+        date,
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        pickupAddress: form.pickupAddress.trim(),
+        city: form.city.trim(),
+        references: form.references.trim(),
+        isHotel: form.isHotel,
+        hotelName: form.isHotel ? form.hotelName.trim() : "",
+        guests: form.guests,
+      })
+      setBookingResult(result)
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setApiError(err.message)
+      } else {
+        setApiError("No pudimos procesar tu reserva. Verificá tu conexión e intentá nuevamente.")
+      }
+      // Scroll to top to show the error
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (!activity || !date) {
@@ -234,7 +271,8 @@ export function ReservarView() {
     )
   }
 
-  if (submitted) {
+  if (bookingResult) {
+    const bk = bookingResult.booking
     return (
       <div className="max-w-2xl mx-auto px-6 py-24 text-center">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
@@ -242,12 +280,35 @@ export function ReservarView() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold mb-3">Solicitud enviada</h1>
+        <h1 className="text-3xl font-bold mb-3">Reserva confirmada</h1>
         <p className="text-muted-foreground mb-2 text-lg">
-          Recibimos tu solicitud para <strong>{activity.title}</strong>.
+          Tu reserva para <strong>{bk.activityTitle}</strong> fue confirmada.
         </p>
-        <p className="text-muted-foreground mb-8">
-          Te contactaremos a <strong>{form.email}</strong> en las próximas horas para confirmar tu lugar.
+
+        {/* Booking summary card */}
+        <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 text-left max-w-md mx-auto mt-6 mb-8 shadow-sm">
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Código de reserva</span>
+              <span className="font-semibold">{bk.id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Fecha</span>
+              <span className="font-medium capitalize">{isoToShortDate(bk.date)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Personas</span>
+              <span className="font-medium">{bk.guests}</span>
+            </div>
+            <div className="border-t border-border pt-3 flex justify-between">
+              <span className="font-bold">Total</span>
+              <span className="font-bold">{bk.currency} {bk.total}</span>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-muted-foreground mb-8 text-sm">
+          Te enviaremos los detalles a <strong>{form.email}</strong>.
         </p>
         <Button asChild variant="outline">
           <Link href="/actividades">Ver más actividades</Link>
@@ -261,19 +322,52 @@ export function ReservarView() {
   const total = subtotal
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-32 lg:pb-10">
 
       {/* Back link */}
       <Link
         href={`/trekkings/${activity.id}?date=${date}`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors group"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 sm:mb-8 transition-colors group"
       >
         <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
         Volver a {activity.title}
       </Link>
 
-      <h1 className="text-3xl font-bold text-foreground mb-1">Confirmar y pagar</h1>
-      <p className="text-muted-foreground mb-10 text-sm">Completá los datos para confirmar tu lugar.</p>
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Confirmar reserva</h1>
+      <p className="text-muted-foreground mb-6 sm:mb-10 text-sm">Completá los datos para confirmar tu lugar.</p>
+
+      {/* API error banner */}
+      {apiError && (
+        <div className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-destructive">No pudimos completar tu reserva</p>
+            <p className="text-sm text-destructive/80 mt-1">{apiError}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile booking summary (visible below lg) */}
+      <div className="lg:hidden mb-6">
+        <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex items-start gap-4 p-4">
+            <div className="w-20 h-16 rounded-xl overflow-hidden bg-muted shrink-0">
+              <img
+                src={activity.cover_image}
+                alt={activity.title}
+                className="w-full h-full object-cover"
+                onError={(e) => { e.currentTarget.src = "/placeholder.jpg" }}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-sm text-foreground leading-snug line-clamp-2">
+                {activity.title}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5 capitalize">{isoToShortDate(date)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-10 items-start">
 
@@ -290,6 +384,8 @@ export function ReservarView() {
                     ref={firstNameRef}
                     id="firstName"
                     type="text"
+                    autoComplete="given-name"
+                    enterKeyHint="next"
                     value={form.firstName}
                     onChange={set("firstName")}
                     onBlur={blur("firstName")}
@@ -302,6 +398,8 @@ export function ReservarView() {
                     ref={lastNameRef}
                     id="lastName"
                     type="text"
+                    autoComplete="family-name"
+                    enterKeyHint="next"
                     value={form.lastName}
                     onChange={set("lastName")}
                     onBlur={blur("lastName")}
@@ -316,6 +414,9 @@ export function ReservarView() {
                   ref={emailRef}
                   id="email"
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  enterKeyHint="next"
                   value={form.email}
                   onChange={set("email")}
                   onBlur={blur("email")}
@@ -333,6 +434,9 @@ export function ReservarView() {
                     ref={phoneRef}
                     id="phone"
                     type="tel"
+                    inputMode="tel"
+                    autoComplete="tel-national"
+                    enterKeyHint="next"
                     value={form.phone}
                     onChange={set("phone")}
                     onBlur={blur("phone")}
@@ -355,6 +459,8 @@ export function ReservarView() {
                   ref={addressRef}
                   id="pickupAddress"
                   type="text"
+                  autoComplete="street-address"
+                  enterKeyHint="next"
                   value={form.pickupAddress}
                   onChange={set("pickupAddress")}
                   onBlur={blur("pickupAddress")}
@@ -368,6 +474,8 @@ export function ReservarView() {
                   ref={cityRef}
                   id="city"
                   type="text"
+                  autoComplete="address-level2"
+                  enterKeyHint="next"
                   value={form.city}
                   onChange={set("city")}
                   onBlur={blur("city")}
@@ -383,7 +491,7 @@ export function ReservarView() {
                   onChange={set("references")}
                   placeholder="Timbre rojo, dpto 2B…"
                   rows={2}
-                  className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
+                  className="w-full border border-border rounded-xl px-4 py-3 text-base sm:text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
                 />
               </Field>
 
@@ -393,7 +501,7 @@ export function ReservarView() {
                   type="checkbox"
                   checked={form.isHotel}
                   onChange={set("isHotel")}
-                  className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                  className="w-5 h-5 rounded border-border accent-primary cursor-pointer"
                 />
                 <span className="text-sm text-foreground select-none">Es un hotel</span>
               </label>
@@ -403,6 +511,8 @@ export function ReservarView() {
                   <input
                     id="hotelName"
                     type="text"
+                    autoComplete="organization"
+                    enterKeyHint="done"
                     value={form.hotelName}
                     onChange={set("hotelName")}
                     onBlur={blur("hotelName")}
@@ -441,13 +551,21 @@ export function ReservarView() {
             </div>
           </SectionCard>
 
-          {/* 4. CTA + terms */}
-          <div className="pt-2">
+          {/* 4. CTA + terms (desktop only) */}
+          <div className="hidden lg:block pt-2">
             <Button
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-14 text-base font-semibold"
               onClick={handleSubmit}
+              disabled={submitting}
             >
-              Confirmar y pagar
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Procesando…
+                </>
+              ) : (
+                `Confirmar reserva · ${activity.currency} ${total}`
+              )}
             </Button>
             <p className="mt-3 text-xs text-muted-foreground text-center leading-relaxed">
               Al confirmar, aceptás los{" "}
@@ -463,8 +581,8 @@ export function ReservarView() {
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN — sticky summary ─────────────────────── */}
-        <div className="lg:sticky lg:top-24">
+        {/* ── RIGHT COLUMN — sticky summary (desktop) ─────────────────────── */}
+        <div className="hidden lg:block lg:sticky lg:top-24">
           <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
 
             {/* Activity image + title */}
@@ -505,7 +623,7 @@ export function ReservarView() {
                     <button
                       onClick={() => setForm((f) => ({ ...f, guests: Math.max(1, f.guests - 1) }))}
                       disabled={form.guests <= 1}
-                      className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-base font-bold hover:border-primary transition-colors disabled:opacity-30"
+                      className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-base font-bold hover:border-primary transition-colors disabled:opacity-30"
                     >
                       −
                     </button>
@@ -513,7 +631,7 @@ export function ReservarView() {
                     <button
                       onClick={() => setForm((f) => ({ ...f, guests: Math.min(activity.capacity_remaining, f.guests + 1) }))}
                       disabled={form.guests >= activity.capacity_remaining}
-                      className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-base font-bold hover:border-primary transition-colors disabled:opacity-30"
+                      className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-base font-bold hover:border-primary transition-colors disabled:opacity-30"
                     >
                       +
                     </button>
@@ -561,6 +679,45 @@ export function ReservarView() {
           </div>
         </div>
 
+      </div>
+
+      {/* ── MOBILE STICKY BOTTOM BAR ──────────────────────────────────────── */}
+      <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 safe-bottom">
+        <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setForm((f) => ({ ...f, guests: Math.max(1, f.guests - 1) }))}
+                disabled={form.guests <= 1}
+                className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-sm font-bold disabled:opacity-30 shrink-0"
+              >
+                −
+              </button>
+              <span className="text-sm font-semibold">{form.guests}</span>
+              <button
+                onClick={() => setForm((f) => ({ ...f, guests: Math.min(activity.capacity_remaining, f.guests + 1) }))}
+                disabled={form.guests >= activity.capacity_remaining}
+                className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-sm font-bold disabled:opacity-30 shrink-0"
+              >
+                +
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              <span className="font-semibold text-foreground">{activity.currency} {total}</span> total
+            </p>
+          </div>
+          <Button
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 px-6 text-sm font-semibold shrink-0"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              "Confirmar reserva"
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   )

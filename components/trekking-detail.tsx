@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ACTIVITIES, dateToIso } from "@/components/actividades-view"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 import { ImageGalleryLightbox } from "@/components/image-gallery-lightbox"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const trekkingData: Record<string, any> = {
   "susana-pm": {
@@ -311,6 +312,7 @@ export function TrekkingDetail({ id }: { id: string }) {
   const trekking = trekkingData[id]
   const searchParams = useSearchParams()
   const router = useRouter()
+  const isMobile = useIsMobile()
 
   // Get matching ACTIVITIES entry for future dates
   const activityData = useMemo(
@@ -404,7 +406,7 @@ export function TrekkingDetail({ id }: { id: string }) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 pb-28 lg:pb-12">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-8">
@@ -592,6 +594,31 @@ export function TrekkingDetail({ id }: { id: string }) {
           isOpen={isGalleryOpen}
           onClose={() => setIsGalleryOpen(false)}
         />
+      )}
+
+      {/* Mobile sticky CTA bar */}
+      {isMobile && activityData && (
+        <div className="fixed bottom-0 inset-x-0 z-50 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 safe-bottom lg:hidden">
+          <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">
+                {activityData.currency} {activityData.price_from}
+                <span className="text-xs font-normal text-muted-foreground"> / persona</span>
+              </p>
+              {selectedDate && (
+                <p className="text-xs text-muted-foreground capitalize">{isoToDisplayDate(selectedDate)}</p>
+              )}
+            </div>
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 px-6 text-sm font-semibold shrink-0"
+              disabled={!selectedDate}
+              onClick={() => selectedDate && router.push(reservaUrl)}
+            >
+              Reservar
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )
