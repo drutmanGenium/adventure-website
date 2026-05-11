@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer"
 import { ChevronRight } from "lucide-react"
 import { useRef, useEffect, useState, useCallback } from "react"
 import Script from "next/script"
+import { useLanguage } from "@/contexts/language-context"
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -142,6 +143,8 @@ function GalleryCarousel({ images }: { images: { src: string; alt: string }[] })
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function LugarLanding({ data }: Props) {
+  const { t } = useLanguage()
+
   // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
@@ -215,7 +218,7 @@ export function LugarLanding({ data }: Props) {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-7 group"
               >
                 <Link href="/actividades">
-                  Ver próximas salidas
+                  {t("Ver próximas salidas", "View upcoming departures")}
                   <ChevronRight className="ml-1.5 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -226,7 +229,7 @@ export function LugarLanding({ data }: Props) {
                 className="bg-white/10 hover:bg-white/20 text-white border-white/30 rounded-full px-7 backdrop-blur-sm"
               >
                 <Link href="/nosotros">
-                  Conocer al equipo
+                  {t("Conocer al equipo", "Meet the team")}
                 </Link>
               </Button>
             </div>
@@ -239,7 +242,7 @@ export function LugarLanding({ data }: Props) {
           {/* ② Sobre la experiencia — was heroIntro, now first content section */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5 text-balance">
-              Sobre la experiencia
+              {t("Sobre la experiencia", "About the experience")}
             </h2>
             <p className="text-muted-foreground leading-relaxed text-pretty">
               {data.heroIntro}
@@ -249,7 +252,7 @@ export function LugarLanding({ data }: Props) {
           {/* ④ Ubicacion */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5 text-balance">
-              ¿Dónde se encuentra?
+              {t("¿Dónde se encuentra?", "Where is it located?")}
             </h2>
             <div className="text-muted-foreground leading-relaxed space-y-4">
               {data.ubicacion}
@@ -259,7 +262,7 @@ export function LugarLanding({ data }: Props) {
           {/* ③ Características naturales */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5 text-balance">
-              Características naturales
+              {t("Características naturales", "Natural features")}
             </h2>
             <div className="text-muted-foreground leading-relaxed">
               {data.caracteristicas}
@@ -269,7 +272,7 @@ export function LugarLanding({ data }: Props) {
           {/* ④ Importancia */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5 text-balance">
-              Importancia dentro de Tierra del Fuego
+              {t("Importancia dentro de Tierra del Fuego", "Importance within Tierra del Fuego")}
             </h2>
             <div className="text-muted-foreground leading-relaxed space-y-4">
               {data.importancia}
@@ -279,7 +282,7 @@ export function LugarLanding({ data }: Props) {
           {/* ⑤ Popularidad */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5 text-balance">
-              ¿Por qué es uno de los lugares más visitados de Ushuaia?
+              {t("¿Por qué es uno de los lugares más visitados de Ushuaia?", "Why is it one of the most visited places in Ushuaia?")}
             </h2>
             <div className="text-muted-foreground leading-relaxed space-y-4">
               {data.popularidad}
@@ -296,7 +299,7 @@ export function LugarLanding({ data }: Props) {
           {/* ⑦ Map */}
           <section>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-5 text-balance">
-              Ubicación en el mapa
+              {t("Ubicación en el mapa", "Map location")}
             </h2>
             <div className="rounded-2xl overflow-hidden border border-border bg-muted" style={{ height: "380px" }}>
               <iframe
@@ -307,7 +310,7 @@ export function LugarLanding({ data }: Props) {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title={`Mapa de ${data.title} en Ushuaia, Tierra del Fuego`}
+                title={t(`Mapa de ${data.title} en Ushuaia, Tierra del Fuego`, `Map of ${data.title} in Ushuaia, Tierra del Fuego`)}
               />
             </div>
           </section>
@@ -316,7 +319,7 @@ export function LugarLanding({ data }: Props) {
           {data.faqs.length > 0 && (
             <section>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-balance">
-                Preguntas frecuentes
+                {t("Preguntas frecuentes", "Frequently asked questions")}
               </h2>
               <div className="space-y-6">
                 {data.faqs.map((faq, i) => (
@@ -333,10 +336,10 @@ export function LugarLanding({ data }: Props) {
           {data.calendarSlug && (
             <section className="border border-border rounded-2xl px-8 py-12 bg-muted/40">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3 text-balance">
-                ¿Querés vivir la experiencia?
+                {t("¿Querés vivir la experiencia?", "Ready to live the experience?")}
               </h2>
               <p className="text-muted-foreground mb-8 max-w-xl text-pretty leading-relaxed">
-                Si estás planificando tu visita a Ushuaia y querés conocer {data.title} con acompañamiento profesional y organización previa, podés reservar tu salida directamente desde nuestra plataforma.
+                {t("Si estás planificando tu visita a Ushuaia y querés conocer", "If you're planning your visit to Ushuaia and want to experience")} {data.title} {t("con acompañamiento profesional y organización previa, podés reservar tu salida directamente desde nuestra plataforma.", "with professional guidance and advance planning, you can book your departure directly from our platform.")}
               </p>
               <Button
                 asChild
@@ -344,7 +347,7 @@ export function LugarLanding({ data }: Props) {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 group"
               >
                 <Link href="/actividades">
-                  Reservar salida
+                  {t("Reservar salida", "Book departure")}
                   <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>

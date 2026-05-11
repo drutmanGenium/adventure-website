@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
 import { useState } from "react"
+import { useLanguage } from "@/contexts/language-context"
 
 export function ContactForm() {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,7 +26,7 @@ export function ContactForm() {
     e.preventDefault()
     // Handle form submission
     console.log("Form submitted:", formData)
-    alert("¡Gracias por contactarnos! Te responderemos pronto.")
+    alert(t("¡Gracias por contactarnos! Te responderemos pronto.", "Thank you for contacting us! We'll get back to you soon."))
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -39,10 +41,10 @@ export function ContactForm() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Contacto</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Hablemos de tu próxima aventura</h1>
+          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">{t("Contacto", "Contact")}</Badge>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t("Hablemos de tu próxima aventura", "Let's talk about your next adventure")}</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Estamos aquí para responder todas tus preguntas y ayudarte a planificar el trekking perfecto
+            {t("Estamos aquí para responder todas tus preguntas y ayudarte a planificar el trekking perfecto", "We're here to answer all your questions and help you plan the perfect trek")}
           </p>
         </div>
 
@@ -50,7 +52,7 @@ export function ContactForm() {
           {/* Contact Info */}
           <div className="lg:col-span-1 space-y-6">
             <Card className="p-6 border-2">
-              <h2 className="text-2xl font-bold mb-6">Información de Contacto</h2>
+              <h2 className="text-2xl font-bold mb-6">{t("Información de Contacto", "Contact Information")}</h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -69,7 +71,7 @@ export function ContactForm() {
                     <Phone className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold mb-1">Teléfono</p>
+                    <p className="font-semibold mb-1">{t("Teléfono", "Phone")}</p>
                     <a href="tel:+542902491234" className="text-muted-foreground hover:text-primary">
                       +54 2902 49-1234
                     </a>
@@ -85,7 +87,7 @@ export function ContactForm() {
                     <MapPin className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold mb-1">Oficina</p>
+                    <p className="font-semibold mb-1">{t("Oficina", "Office")}</p>
                     <p className="text-muted-foreground">
                       Av. Libertador 123
                       <br />
@@ -101,13 +103,13 @@ export function ContactForm() {
                     <Clock className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold mb-1">Horario de Atención</p>
+                    <p className="font-semibold mb-1">{t("Horario de Atención", "Business Hours")}</p>
                     <p className="text-muted-foreground">
-                      Lunes a Viernes: 9:00 - 18:00
+                      {t("Lunes a Viernes: 9:00 - 18:00", "Monday to Friday: 9:00 AM - 6:00 PM")}
                       <br />
-                      Sábados: 10:00 - 14:00
+                      {t("Sábados: 10:00 - 14:00", "Saturdays: 10:00 AM - 2:00 PM")}
                       <br />
-                      Domingos: Cerrado
+                      {t("Domingos: Cerrado", "Sundays: Closed")}
                     </p>
                   </div>
                 </div>
@@ -115,9 +117,9 @@ export function ContactForm() {
             </Card>
 
             <Card className="p-6 bg-primary text-primary-foreground border-2 border-primary">
-              <h3 className="text-xl font-bold mb-3">¿Necesitás ayuda inmediata?</h3>
+              <h3 className="text-xl font-bold mb-3">{t("¿Necesitás ayuda inmediata?", "Need immediate help?")}</h3>
               <p className="mb-4 opacity-90">
-                Nuestro equipo está disponible para consultas urgentes sobre expediciones en curso.
+                {t("Nuestro equipo está disponible para consultas urgentes sobre expediciones en curso.", "Our team is available for urgent queries about ongoing expeditions.")}
               </p>
               <Button variant="secondary" className="w-full" size="lg">
                 WhatsApp: +54 9 11 2345-6789
@@ -128,11 +130,11 @@ export function ContactForm() {
           {/* Contact Form */}
           <div className="lg:col-span-2">
             <Card className="p-8 border-2">
-              <h2 className="text-2xl font-bold mb-6">Envianos un mensaje</h2>
+              <h2 className="text-2xl font-bold mb-6">{t("Envianos un mensaje", "Send us a message")}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre completo *</Label>
+                    <Label htmlFor="name">{t("Nombre completo *", "Full name *")}</Label>
                     <Input
                       id="name"
                       name="name"
@@ -159,7 +161,7 @@ export function ContactForm() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Teléfono</Label>
+                    <Label htmlFor="phone">{t("Teléfono", "Phone")}</Label>
                     <Input
                       id="phone"
                       name="phone"
@@ -171,11 +173,11 @@ export function ContactForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Asunto *</Label>
+                    <Label htmlFor="subject">{t("Asunto *", "Subject *")}</Label>
                     <Input
                       id="subject"
                       name="subject"
-                      placeholder="Consulta sobre Fitz Roy"
+                      placeholder={t("Consulta sobre Fitz Roy", "Inquiry about Fitz Roy")}
                       value={formData.subject}
                       onChange={handleChange}
                       required
@@ -184,11 +186,11 @@ export function ContactForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">Mensaje *</Label>
+                  <Label htmlFor="message">{t("Mensaje *", "Message *")}</Label>
                   <Textarea
                     id="message"
                     name="message"
-                    placeholder="Contanos sobre tu experiencia de trekking previa, nivel de fitness, fechas preferidas, y cualquier pregunta que tengas..."
+                    placeholder={t("Contanos sobre tu experiencia de trekking previa, nivel de fitness, fechas preferidas, y cualquier pregunta que tengas...", "Tell us about your previous trekking experience, fitness level, preferred dates, and any questions you may have...")}
                     value={formData.message}
                     onChange={handleChange}
                     rows={6}
@@ -198,7 +200,7 @@ export function ContactForm() {
 
                 <Button type="submit" size="lg" className="w-full md:w-auto bg-primary text-primary-foreground">
                   <Send className="mr-2 h-5 w-5" />
-                  Enviar Mensaje
+                  {t("Enviar Mensaje", "Send Message")}
                 </Button>
               </form>
             </Card>
@@ -207,36 +209,33 @@ export function ContactForm() {
 
         {/* FAQ Section */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Preguntas Frecuentes</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">{t("Preguntas Frecuentes", "Frequently Asked Questions")}</h2>
           <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             <Card className="p-6 border-2">
-              <h3 className="font-bold mb-2">¿Cuándo es la mejor época para hacer trekking?</h3>
+              <h3 className="font-bold mb-2">{t("¿Cuándo es la mejor época para hacer trekking?", "When is the best time for trekking?")}</h3>
               <p className="text-muted-foreground text-sm">
-                La temporada alta es de noviembre a marzo, con días más largos y clima más estable. Diciembre y enero
-                son los meses más populares.
+                {t("La temporada alta es de noviembre a marzo, con días más largos y clima más estable. Diciembre y enero son los meses más populares.", "High season runs from November to March, with longer days and more stable weather. December and January are the most popular months.")}
               </p>
             </Card>
 
             <Card className="p-6 border-2">
-              <h3 className="font-bold mb-2">¿Qué nivel de fitness necesito?</h3>
+              <h3 className="font-bold mb-2">{t("¿Qué nivel de fitness necesito?", "What fitness level do I need?")}</h3>
               <p className="text-muted-foreground text-sm">
-                Depende del trekking. Tenemos opciones para todos los niveles, desde caminatas fáciles hasta
-                expediciones avanzadas que requieren buena condición física.
+                {t("Depende del trekking. Tenemos opciones para todos los niveles, desde caminatas fáciles hasta expediciones avanzadas que requieren buena condición física.", "It depends on the trek. We have options for all levels, from easy walks to advanced expeditions requiring good physical condition.")}
               </p>
             </Card>
 
             <Card className="p-6 border-2">
-              <h3 className="font-bold mb-2">¿Proveen equipamiento?</h3>
+              <h3 className="font-bold mb-2">{t("¿Proveen equipamiento?", "Do you provide equipment?")}</h3>
               <p className="text-muted-foreground text-sm">
-                Sí, incluimos equipamiento técnico (crampones, carpas, etc.). El equipamiento personal como botas y ropa
-                es responsabilidad del participante.
+                {t("Sí, incluimos equipamiento técnico (crampones, carpas, etc.). El equipamiento personal como botas y ropa es responsabilidad del participante.", "Yes, we include technical equipment (crampons, tents, etc.). Personal gear like boots and clothing is the participant's responsibility.")}
               </p>
             </Card>
 
             <Card className="p-6 border-2">
-              <h3 className="font-bold mb-2">¿Puedo hacer un trekking privado?</h3>
+              <h3 className="font-bold mb-2">{t("¿Puedo hacer un trekking privado?", "Can I book a private trek?")}</h3>
               <p className="text-muted-foreground text-sm">
-                Sí, ofrecemos expediciones privadas para grupos. Contactanos para armar un itinerario personalizado.
+                {t("Sí, ofrecemos expediciones privadas para grupos. Contactanos para armar un itinerario personalizado.", "Yes, we offer private expeditions for groups. Contact us to create a custom itinerary.")}
               </p>
             </Card>
           </div>
