@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ACTIVITIES, dateToIso } from "@/components/actividades-view"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 import { ImageGalleryLightbox } from "@/components/image-gallery-lightbox"
+import { useLanguage } from "@/contexts/language-context"
 
 const trekkingData: Record<string, any> = {
   "susana-pm": {
@@ -301,13 +302,14 @@ const trekkingData: Record<string, any> = {
 
 // ─── Date helpers (local) ─────────────────────────────────────────────────────
 
-function isoToDisplayDate(iso: string) {
+function isoToDisplayDate(iso: string, locale: string = "es-AR") {
   const [y, m, d] = iso.split("-").map(Number)
   const date = new Date(y, m - 1, d)
-  return date.toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" })
+  return date.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })
 }
 
 export function TrekkingDetail({ id }: { id: string }) {
+  const { t, language } = useLanguage()
   const trekking = trekkingData[id]
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -337,9 +339,9 @@ export function TrekkingDetail({ id }: { id: string }) {
   if (!trekking) {
     return (
       <div className="py-20 px-4 text-center">
-        <h1 className="text-3xl font-bold mb-4">Actividad no encontrada</h1>
+        <h1 className="text-3xl font-bold mb-4">{t("Actividad no encontrada", "Activity not found")}</h1>
         <Link href="/actividades">
-          <Button>Ver Actividades</Button>
+          <Button>{t("Ver Actividades", "View Activities")}</Button>
         </Link>
       </div>
     )
@@ -367,7 +369,7 @@ export function TrekkingDetail({ id }: { id: string }) {
             onClick={() => setIsGalleryOpen(true)}
             className="absolute bottom-6 right-6 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm flex items-center justify-center text-white transition-all hover:shadow-lg hover:scale-105"
             aria-label="View gallery"
-            title="Ver galería"
+            title={t("Ver galería", "View gallery")}
           >
             <ImageIcon className="h-6 w-6" />
           </button>
@@ -378,7 +380,7 @@ export function TrekkingDetail({ id }: { id: string }) {
             <Link href="/actividades">
               <Button variant="ghost" className="mb-4 text-white hover:text-white hover:bg-white/20">
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                Volver a Actividades
+                {t("Volver a Actividades", "Back to Activities")}
               </Button>
             </Link>
             <Badge className={`mb-4 ${difficultyColors[trekking.difficulty as keyof typeof difficultyColors]} border`}>
@@ -396,7 +398,7 @@ export function TrekkingDetail({ id }: { id: string }) {
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                <span>Grupo: {trekking.groupSize} personas</span>
+                <span>{t("Grupo: ", "Group: ")}{trekking.groupSize}{t(" personas", " people")}</span>
               </div>
             </div>
           </div>
@@ -410,14 +412,14 @@ export function TrekkingDetail({ id }: { id: string }) {
           <div className="lg:col-span-2 space-y-8">
             {/* Description */}
             <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Descripción</h2>
+              <h2 className="text-2xl font-bold mb-4">{t("Descripción", "Description")}</h2>
               <p className="text-muted-foreground mb-4 leading-relaxed">{trekking.description}</p>
               <p className="text-muted-foreground leading-relaxed">{trekking.longDescription}</p>
             </Card>
 
             {/* Itinerary */}
             <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Itinerario</h2>
+              <h2 className="text-2xl font-bold mb-6">{t("Itinerario", "Itinerary")}</h2>
               <div className="space-y-6">
                 {trekking.itinerary.map((day: any, index: number) => (
                   <div key={index} className="flex gap-4">
@@ -439,12 +441,12 @@ export function TrekkingDetail({ id }: { id: string }) {
 
             {/* What's Included */}
             <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Qué está incluido</h2>
+              <h2 className="text-2xl font-bold mb-6">{t("Qué está incluido", "What's included")}</h2>
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
                   <h3 className="font-semibold mb-4 flex items-center gap-2 text-green-600">
                     <Check className="h-5 w-5" />
-                    Incluye
+                    {t("Incluye", "Included")}
                   </h3>
                   <ul className="space-y-2">
                     {trekking.included.map((item: string, index: number) => (
@@ -458,7 +460,7 @@ export function TrekkingDetail({ id }: { id: string }) {
                 <div>
                   <h3 className="font-semibold mb-4 flex items-center gap-2 text-red-600">
                     <X className="h-5 w-5" />
-                    No Incluye
+                    {t("No Incluye", "Not Included")}
                   </h3>
                   <ul className="space-y-2">
                     {trekking.notIncluded.map((item: string, index: number) => (
@@ -476,7 +478,7 @@ export function TrekkingDetail({ id }: { id: string }) {
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Info className="h-6 w-6 text-primary" />
-                Requisitos
+                {t("Requisitos", "Requirements")}
               </h2>
               <ul className="space-y-2">
                 {trekking.requirements.map((req: string, index: number) => (
@@ -495,22 +497,22 @@ export function TrekkingDetail({ id }: { id: string }) {
               {/* Price */}
               {activityData && (
                 <div className="mb-6">
-                  <p className="text-sm text-muted-foreground mb-1">Desde</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("Desde", "From")}</p>
                   <p className="text-3xl font-bold text-foreground">
                     {activityData.currency} {activityData.price_from}
-                    <span className="text-base font-normal text-muted-foreground"> / persona</span>
+                    <span className="text-base font-normal text-muted-foreground"> {t("/ persona", "/ person")}</span>
                   </p>
                 </div>
               )}
 
               {/* Fechas disponibles */}
               <div className="mb-6">
-                <h2 className="text-base font-semibold mb-3">Fechas disponibles</h2>
+                <h2 className="text-base font-semibold mb-3">{t("Fechas disponibles", "Available dates")}</h2>
 
                 {futureDates.length === 0 ? (
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      No hay fechas disponibles por el momento. Consultanos y te avisamos apenas haya nuevas salidas.
+                      {t("No hay fechas disponibles por el momento. Consultanos y te avisamos apenas haya nuevas salidas.", "No dates currently available. Contact us and we'll let you know when new departures open.")}
                     </p>
                     <a
                       href={createWhatsAppHref()}
@@ -518,7 +520,7 @@ export function TrekkingDetail({ id }: { id: string }) {
                       rel="noopener noreferrer"
                       className="inline-block mt-3 text-sm font-medium text-primary hover:underline"
                     >
-                      Consultanos →
+                      {t("Consultanos →", "Contact us →")}
                     </a>
                   </div>
                 ) : (
@@ -540,12 +542,12 @@ export function TrekkingDetail({ id }: { id: string }) {
                             <div className="flex items-center gap-2.5">
                               <Calendar className={`h-4 w-4 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                               <span className={`font-medium text-sm capitalize ${isSelected ? "text-foreground" : "text-foreground"}`}>
-                                {isoToDisplayDate(date)}
+                                {isoToDisplayDate(date, language === "es" ? "es-AR" : "en-US")}
                               </span>
                             </div>
                             {capacity !== null && (
                               <span className="text-xs text-muted-foreground shrink-0">
-                                {capacity} lugares
+                                {capacity}{t(" lugares", " spots")}
                               </span>
                             )}
                           </div>
@@ -563,20 +565,20 @@ export function TrekkingDetail({ id }: { id: string }) {
                 disabled={!selectedDate}
                 onClick={() => selectedDate && router.push(reservaUrl)}
               >
-                Continuar a reserva
+                {t("Continuar a reserva", "Continue to booking")}
                 <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
 
               <div className="mt-5 pt-5 border-t border-border">
                 <p className="text-sm text-muted-foreground text-center">
-                  ¿Tenés dudas?{" "}
+                  {t("¿Tenés dudas? ", "Have questions? ")}
                   <a 
                     href={createWhatsAppHref()} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-primary hover:underline font-medium"
                   >
-                    Contactanos
+                    {t("Contactanos", "Contact us")}
                   </a>
                 </p>
               </div>

@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react"
 import { Search, X, ChevronDown, Users, Calendar, MapPin, Clock, TrendingUp } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useLanguage } from "@/contexts/language-context"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -249,9 +250,9 @@ export function dateToIso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
 }
 
-function formatDisplayDate(iso: string) {
+function formatDisplayDate(iso: string, locale: string = "es-AR") {
   const d = isoToDate(iso)
-  return d.toLocaleDateString("es-AR", { day: "numeric", month: "short" })
+  return d.toLocaleDateString(locale, { day: "numeric", month: "short" })
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -269,6 +270,7 @@ function MiniCalendar({
   endDate: string | null
   onSelect: (start: string, end: string | null) => void
 }) {
+  const { language } = useLanguage()
   const today = new Date()
   const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
@@ -285,7 +287,7 @@ function MiniCalendar({
     else setViewMonth(m => m + 1)
   }
 
-  const monthName = new Date(viewYear, viewMonth).toLocaleDateString("es-AR", { month: "long", year: "numeric" })
+  const monthName = new Date(viewYear, viewMonth).toLocaleDateString(language === "es" ? "es-AR" : "en-US", { month: "long", year: "numeric" })
 
   const handleDayClick = (day: number) => {
     const iso = dateToIso(new Date(viewYear, viewMonth, day))
@@ -321,7 +323,7 @@ function MiniCalendar({
       </div>
       {/* Day labels */}
       <div className="grid grid-cols-7 mb-1">
-        {["Do","Lu","Ma","Mi","Ju","Vi","Sa"].map(d => (
+        {(language === "es" ? ["Do","Lu","Ma","Mi","Ju","Vi","Sa"] : ["Su","Mo","Tu","We","Th","Fr","Sa"]).map(d => (
           <div key={d} className="text-center text-xs text-muted-foreground font-medium py-1">{d}</div>
         ))}
       </div>
@@ -377,6 +379,7 @@ function SearchBar({
   guests, setGuests,
   hasFilters, onClear,
 }: SearchBarProps) {
+  const { t, language } = useLanguage()
   const [openPanel, setOpenPanel] = useState<"where" | "when" | "who" | null>(null)
   const barRef = useRef<HTMLDivElement>(null)
 
@@ -391,13 +394,31 @@ function SearchBar({
     return () => document.removeEventListener("mousedown", handler)
   }, [])
 
-  const wherLabel = (category === "all" || category === "Todas") ? "¿Qué actividad?" : category
+  const locale = language === "es" ? "es-AR" : "en-US"
+
+  const getCategoryLabel = (label: string) => {
+    const translations: Record<string, string> = {
+      "Ver todas": t("Ver todas", "View all"),
+      "Laguna Esmeralda": "Laguna Esmeralda",
+      "Glaciar Vinciguerra": "Glaciar Vinciguerra",
+      "Ojo del Albino": "Ojo del Albino",
+      "Valle Tierra Mayor": "Valle Tierra Mayor",
+      "Valle de Andorra": "Valle de Andorra",
+      "Trekking": "Trekking",
+      "Parque Nacional": t("Parque Nacional", "National Park"),
+      "Canal Beagle": "Canal Beagle",
+      "City Tour": "City Tour",
+    }
+    return translations[label] ?? label
+  }
+
+  const wherLabel = (category === "all" || category === "Todas") ? t("¿Qué actividad?", "Which activity?") : category
   const whenLabel = startDate
     ? endDate && endDate !== startDate
-      ? `${formatDisplayDate(startDate)} – ${formatDisplayDate(endDate)}`
-      : formatDisplayDate(startDate)
-    : "¿Cuándo?"
-  const whoLabel = guests > 1 ? `${guests} personas` : "1 persona"
+      ? `${formatDisplayDate(startDate, locale)} – ${formatDisplayDate(endDate, locale)}`
+      : formatDisplayDate(startDate, locale)
+    : t("¿Cuándo?", "When?")
+  const whoLabel = guests > 1 ? `${guests} ${t("personas", "people")}` : t("1 persona", "1 person")
 
   const toggle = (panel: "where" | "when" | "who") =>
     setOpenPanel(prev => (prev === panel ? null : panel))
@@ -411,7 +432,7 @@ function SearchBar({
           onClick={() => toggle("where")}
           className={`flex flex-col items-start px-6 py-3 rounded-l-full hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "where" ? "bg-muted/60" : ""}`}
         >
-          <span className="text-xs font-semibold text-foreground">Actividad</span>
+          <span className="text-xs font-semibold text-foreground">{t("Actividad", "Activity")}</span>
           <span className="text-sm text-muted-foreground truncate max-w-[160px]">{wherLabel}</span>
         </button>
 
@@ -420,7 +441,7 @@ function SearchBar({
           onClick={() => toggle("when")}
           className={`flex flex-col items-start px-6 py-3 hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "when" ? "bg-muted/60" : ""}`}
         >
-          <span className="text-xs font-semibold text-foreground">Fecha</span>
+          <span className="text-xs font-semibold text-foreground">{t("Fecha", "Date")}</span>
           <span className="text-sm text-muted-foreground truncate">{whenLabel}</span>
         </button>
 
@@ -429,7 +450,7 @@ function SearchBar({
           onClick={() => toggle("who")}
           className={`flex flex-col items-start px-6 py-3 hover:bg-muted/60 transition-colors min-w-0 flex-1 ${openPanel === "who" ? "bg-muted/60" : ""}`}
         >
-          <span className="text-xs font-semibold text-foreground">Personas</span>
+          <span className="text-xs font-semibold text-foreground">{t("Personas", "People")}</span>
           <span className="text-sm text-muted-foreground">{whoLabel}</span>
         </button>
 
@@ -437,7 +458,7 @@ function SearchBar({
         <div className="flex items-center px-3 pr-2">
           <button
             className="bg-primary text-primary-foreground rounded-full p-3 hover:bg-primary/90 transition-colors"
-            aria-label="Buscar actividades"
+            aria-label={t("Buscar actividades", "Search activities")}
             onClick={() => setOpenPanel(null)}
           >
             <Search className="h-4 w-4" />
@@ -453,7 +474,7 @@ function SearchBar({
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-3.5 w-3.5" />
-            Limpiar filtros
+            {t("Limpiar filtros", "Clear filters")}
           </button>
         </div>
       )}
@@ -462,7 +483,7 @@ function SearchBar({
       {openPanel === "where" && (
         <div className="absolute top-[calc(100%+12px)] left-0 bg-card border border-border rounded-3xl shadow-xl z-50 p-4 w-72">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
-            Actividad
+            {t("Actividad", "Activity")}
           </p>
           <div className="flex flex-col gap-1">
             {CATEGORIES.map(({ label, value }) => (
@@ -475,7 +496,7 @@ function SearchBar({
                     : "hover:bg-muted text-foreground"
                   }`}
               >
-                {label}
+                {getCategoryLabel(label)}
               </button>
             ))}
           </div>
@@ -496,13 +517,13 @@ function SearchBar({
                 onClick={() => setDates(null, null)}
                 className="flex-1 py-2 text-sm border border-border rounded-xl hover:bg-muted transition-colors"
               >
-                Borrar
+                {t("Borrar", "Clear")}
               </button>
               <button
                 onClick={() => setOpenPanel(null)}
                 className="flex-1 py-2 text-sm bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium"
               >
-                Aplicar
+                {t("Aplicar", "Apply")}
               </button>
             </div>
           )}
@@ -514,8 +535,8 @@ function SearchBar({
         <div className="absolute top-[calc(100%+12px)] right-16 bg-card border border-border rounded-3xl shadow-xl z-50 p-5 w-64">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-sm">Personas</p>
-              <p className="text-xs text-muted-foreground">¿Cuántos van?</p>
+              <p className="font-semibold text-sm">{t("Personas", "People")}</p>
+              <p className="text-xs text-muted-foreground">{t("¿Cuántos van?", "How many?")}</p>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -543,6 +564,7 @@ function SearchBar({
 // ─── Activity Card ────────────────────────────────────────────────────────────
 
 function ActivityCard({ activity }: { activity: Activity }) {
+  const { t } = useLanguage()
   const router = useRouter()
 
   const nextDate = activity.availability_dates
@@ -591,7 +613,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
         {/* Price */}
         <p className="text-sm pt-1">
           <span className="font-semibold text-foreground">{activity.currency} {activity.price_from}</span>
-          <span className="text-muted-foreground"> / persona</span>
+          <span className="text-muted-foreground"> {t("/ persona", "/ person")}</span>
         </p>
       </div>
     </article>
@@ -601,18 +623,19 @@ function ActivityCard({ activity }: { activity: Activity }) {
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyState({ onClear }: { onClear: () => void }) {
+  const { t } = useLanguage()
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="text-5xl mb-4">🔍</div>
-      <h3 className="text-xl font-semibold mb-2">Sin resultados</h3>
+      <h3 className="text-xl font-semibold mb-2">{t("Sin resultados", "No results")}</h3>
       <p className="text-muted-foreground mb-6 max-w-sm">
-        No hay actividades disponibles con esos filtros. Probá ajustando la búsqueda.
+        {t("No hay actividades disponibles con esos filtros. Probá ajustando la búsqueda.", "No activities match your filters. Try adjusting your search.")}
       </p>
       <button
         onClick={onClear}
         className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-medium hover:bg-primary/90 transition-colors"
       >
-        Limpiar filtros
+        {t("Limpiar filtros", "Clear filters")}
       </button>
     </div>
   )
@@ -630,6 +653,7 @@ const SLUG_TO_CATEGORY: Record<string, Category> = {
 }
 
 export function ActividadesView() {
+  const { t } = useLanguage()
   const searchParams = useSearchParams()
 
   const initialCategory: Category | "all" = (() => {
@@ -700,7 +724,7 @@ export function ActividadesView() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Count */}
         <p className="text-sm text-muted-foreground mb-6">
-          {filtered.length} {filtered.length === 1 ? "actividad disponible" : "actividades disponibles"}
+          {filtered.length} {filtered.length === 1 ? t("actividad disponible", "activity available") : t("actividades disponibles", "activities available")}
         </p>
 
         {filtered.length === 0 ? (

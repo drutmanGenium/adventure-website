@@ -6,12 +6,13 @@ import { ACTIVITIES } from "@/components/actividades-view"
 import { Button } from "@/components/ui/button"
 import { Calendar, ChevronLeft, Users } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/contexts/language-context"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function isoToDisplayDate(iso: string) {
+function isoToDisplayDate(iso: string, locale: string = "es-AR") {
   const [y, m, d] = iso.split("-").map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString("es-AR", {
+  return new Date(y, m - 1, d).toLocaleDateString(locale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -19,9 +20,9 @@ function isoToDisplayDate(iso: string) {
   })
 }
 
-function isoToShortDate(iso: string) {
+function isoToShortDate(iso: string, locale: string = "es-AR") {
   const [y, m, d] = iso.split("-").map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString("es-AR", {
+  return new Date(y, m - 1, d).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -108,6 +109,8 @@ function SectionCard({ title, children }: { title: string; children: React.React
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ReservarView() {
+  const { t, language } = useLanguage()
+  const locale = language === "es" ? "es-AR" : "en-US"
   const searchParams = useSearchParams()
   const departureId = searchParams.get("departureId") ?? ""
 
@@ -164,31 +167,31 @@ export function ReservarView() {
     const errs: FormErrors = {}
     switch (field) {
       case "firstName":
-        if (!values.firstName.trim()) errs.firstName = "El nombre es obligatorio."
+        if (!values.firstName.trim()) errs.firstName = t("El nombre es obligatorio.", "First name is required.")
         break
       case "lastName":
-        if (!values.lastName.trim()) errs.lastName = "El apellido es obligatorio."
+        if (!values.lastName.trim()) errs.lastName = t("El apellido es obligatorio.", "Last name is required.")
         break
       case "email":
-        if (!values.email.trim()) errs.email = "El email es obligatorio."
-        else if (!isValidEmail(values.email)) errs.email = "Ingresá un email válido."
+        if (!values.email.trim()) errs.email = t("El email es obligatorio.", "Email is required.")
+        else if (!isValidEmail(values.email)) errs.email = t("Ingresá un email válido.", "Enter a valid email.")
         break
       case "phone":
-        if (!values.phone.trim()) errs.phone = "El teléfono es obligatorio."
-        else if (!isValidPhone(values.phone)) errs.phone = "Ingresá un número válido (mín. 7 dígitos)."
+        if (!values.phone.trim()) errs.phone = t("El teléfono es obligatorio.", "Phone number is required.")
+        else if (!isValidPhone(values.phone)) errs.phone = t("Ingresá un número válido (mín. 7 dígitos).", "Enter a valid number (min. 7 digits).")
         break
       case "pickupAddress":
-        if (!values.pickupAddress.trim()) errs.pickupAddress = "La dirección es obligatoria."
+        if (!values.pickupAddress.trim()) errs.pickupAddress = t("La dirección es obligatoria.", "Address is required.")
         break
       case "city":
-        if (!values.city.trim()) errs.city = "La ciudad es obligatoria."
+        if (!values.city.trim()) errs.city = t("La ciudad es obligatoria.", "City is required.")
         break
       case "hotelName":
-        if (values.isHotel && !values.hotelName.trim()) errs.hotelName = "Ingresá el nombre del hotel."
+        if (values.isHotel && !values.hotelName.trim()) errs.hotelName = t("Ingresá el nombre del hotel.", "Enter the hotel name.")
         break
     }
     return errs
-  }, [])
+  }, [t])
 
   const validateAll = useCallback((values: BookingForm): FormErrors => {
     const fields: (keyof BookingForm)[] = ["firstName", "lastName", "email", "phone", "pickupAddress", "city"]
@@ -223,12 +226,12 @@ export function ReservarView() {
   if (!activity || !date) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-24 text-center">
-        <h1 className="text-2xl font-bold mb-4">Reserva no encontrada</h1>
+        <h1 className="text-2xl font-bold mb-4">{t("Reserva no encontrada", "Booking not found")}</h1>
         <p className="text-muted-foreground mb-8">
-          No pudimos encontrar la salida. Volvé a actividades y seleccioná una fecha.
+          {t("No pudimos encontrar la salida. Volvé a actividades y seleccioná una fecha.", "We couldn't find this departure. Go back to activities and select a date.")}
         </p>
         <Button asChild>
-          <Link href="/actividades">Ver Actividades</Link>
+          <Link href="/actividades">{t("Ver Actividades", "View Activities")}</Link>
         </Button>
       </div>
     )
@@ -242,15 +245,15 @@ export function ReservarView() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold mb-3">Solicitud enviada</h1>
+        <h1 className="text-3xl font-bold mb-3">{t("Solicitud enviada", "Request submitted")}</h1>
         <p className="text-muted-foreground mb-2 text-lg">
-          Recibimos tu solicitud para <strong>{activity.title}</strong>.
+          {t("Recibimos tu solicitud para", "We received your request for")} <strong>{activity.title}</strong>.
         </p>
         <p className="text-muted-foreground mb-8">
-          Te contactaremos a <strong>{form.email}</strong> en las próximas horas para confirmar tu lugar.
+          {t("Te contactaremos a", "We'll contact you at")} <strong>{form.email}</strong> {t("en las próximas horas para confirmar tu lugar.", "within the next few hours to confirm your spot.")}
         </p>
         <Button asChild variant="outline">
-          <Link href="/actividades">Ver más actividades</Link>
+          <Link href="/actividades">{t("Ver más actividades", "View more activities")}</Link>
         </Button>
       </div>
     )
@@ -269,11 +272,11 @@ export function ReservarView() {
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors group"
       >
         <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-        Volver a {activity.title}
+        {t("Volver a ", "Back to ")}{activity.title}
       </Link>
 
-      <h1 className="text-3xl font-bold text-foreground mb-1">Confirmar y pagar</h1>
-      <p className="text-muted-foreground mb-10 text-sm">Completá los datos para confirmar tu lugar.</p>
+      <h1 className="text-3xl font-bold text-foreground mb-1">{t("Confirmar y pagar", "Confirm and pay")}</h1>
+      <p className="text-muted-foreground mb-10 text-sm">{t("Completá los datos para confirmar tu lugar.", "Fill in your details to confirm your spot.")}</p>
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-10 items-start">
 
@@ -281,11 +284,11 @@ export function ReservarView() {
         <div className="space-y-6">
 
           {/* 1. Datos del participante */}
-          <SectionCard title="Datos del participante">
+          <SectionCard title={t("Datos del participante", "Participant details")}>
             <div className="space-y-4">
               {/* Nombre + Apellido row */}
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Nombre" id="firstName" error={errors.firstName}>
+                <Field label={t("Nombre", "First name")} id="firstName" error={errors.firstName}>
                   <input
                     ref={firstNameRef}
                     id="firstName"
@@ -297,7 +300,7 @@ export function ReservarView() {
                     className={inputClass(errors.firstName)}
                   />
                 </Field>
-                <Field label="Apellido" id="lastName" error={errors.lastName}>
+                <Field label={t("Apellido", "Last name")} id="lastName" error={errors.lastName}>
                   <input
                     ref={lastNameRef}
                     id="lastName"
@@ -324,7 +327,7 @@ export function ReservarView() {
                 />
               </Field>
 
-              <Field label="Teléfono / WhatsApp" id="phone" error={errors.phone}>
+              <Field label={t("Teléfono / WhatsApp", "Phone / WhatsApp")} id="phone" error={errors.phone}>
                 <div className="flex gap-2">
                   <span className="flex items-center justify-center border border-border rounded-xl px-3 bg-muted text-sm text-muted-foreground shrink-0 select-none">
                     +54
@@ -345,12 +348,12 @@ export function ReservarView() {
           </SectionCard>
 
           {/* 2. Dirección de pick-up */}
-          <SectionCard title="Dirección de pick-up">
+          <SectionCard title={t("Dirección de pick-up", "Pick-up address")}>
             <p className="text-sm text-muted-foreground mb-4 -mt-2">
-              Indicanos dónde te pasamos a buscar antes de la salida.
+              {t("Indicanos dónde te pasamos a buscar antes de la salida.", "Let us know where to pick you up before departure.")}
             </p>
             <div className="space-y-4">
-              <Field label="Dirección (calle y número)" id="pickupAddress" error={errors.pickupAddress}>
+              <Field label={t("Dirección (calle y número)", "Address (street and number)")} id="pickupAddress" error={errors.pickupAddress}>
                 <input
                   ref={addressRef}
                   id="pickupAddress"
@@ -363,7 +366,7 @@ export function ReservarView() {
                 />
               </Field>
 
-              <Field label="Ciudad" id="city" error={errors.city}>
+              <Field label={t("Ciudad", "City")} id="city" error={errors.city}>
                 <input
                   ref={cityRef}
                   id="city"
@@ -376,7 +379,7 @@ export function ReservarView() {
                 />
               </Field>
 
-              <Field label="Referencias (opcional)" id="references">
+              <Field label={t("Referencias (opcional)", "References (optional)")} id="references">
                 <textarea
                   id="references"
                   value={form.references}
@@ -395,11 +398,11 @@ export function ReservarView() {
                   onChange={set("isHotel")}
                   className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
                 />
-                <span className="text-sm text-foreground select-none">Es un hotel</span>
+                <span className="text-sm text-foreground select-none">{t("Es un hotel", "This is a hotel")}</span>
               </label>
 
               {form.isHotel && (
-                <Field label="Nombre del hotel" id="hotelName" error={errors.hotelName}>
+                <Field label={t("Nombre del hotel", "Hotel name")} id="hotelName" error={errors.hotelName}>
                   <input
                     id="hotelName"
                     type="text"
@@ -415,17 +418,17 @@ export function ReservarView() {
           </SectionCard>
 
           {/* 3. Método de pago */}
-          <SectionCard title="Método de pago">
+          <SectionCard title={t("Método de pago", "Payment method")}>
             <div className="flex items-center justify-between py-3 px-4 border border-border rounded-xl bg-muted/30">
               <div className="flex items-center gap-3">
                 {/* Mock card icon */}
                 <div className="w-10 h-7 rounded-md bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
                   <div className="w-5 h-3 rounded-sm bg-yellow-400/80" />
                 </div>
-                <span className="text-sm text-foreground">Tarjeta terminada en 4242</span>
+                <span className="text-sm text-foreground">{t("Tarjeta terminada en 4242", "Card ending in 4242")}</span>
               </div>
               <button className="text-sm font-medium text-primary hover:underline">
-                Cambiar
+                {t("Cambiar", "Change")}
               </button>
             </div>
             {/* Payment icons row */}
@@ -447,16 +450,16 @@ export function ReservarView() {
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-14 text-base font-semibold"
               onClick={handleSubmit}
             >
-              Confirmar y pagar
+              {t("Confirmar y pagar", "Confirm and pay")}
             </Button>
             <p className="mt-3 text-xs text-muted-foreground text-center leading-relaxed">
-              Al confirmar, aceptás los{" "}
+              {t("Al confirmar, aceptás los ", "By confirming, you accept the ")}
               <a href="#" className="underline hover:text-foreground transition-colors">
-                Términos de reserva
-              </a>{" "}
-              y la{" "}
+                {t("Términos de reserva", "Booking terms")}
+              </a>
+              {t(" y la ", " and the ")}
               <a href="#" className="underline hover:text-foreground transition-colors">
-                Política de privacidad
+                {t("Política de privacidad", "Privacy policy")}
               </a>
               .
             </p>
@@ -491,8 +494,8 @@ export function ReservarView() {
               {/* Date */}
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Fecha</p>
-                  <p className="text-sm font-medium capitalize">{isoToShortDate(date)}</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">{t("Fecha", "Date")}</p>
+                  <p className="text-sm font-medium capitalize">{isoToShortDate(date, locale)}</p>
                 </div>
                 <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               </div>
@@ -500,7 +503,7 @@ export function ReservarView() {
               {/* Guests */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Personas</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">{t("Personas", "People")}</p>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setForm((f) => ({ ...f, guests: Math.max(1, f.guests - 1) }))}
@@ -521,7 +524,7 @@ export function ReservarView() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Users className="h-3.5 w-3.5" />
-                  <span>{activity.capacity_remaining} disponibles</span>
+                  <span>{activity.capacity_remaining} {t("disponibles", "available")}</span>
                 </div>
               </div>
 
@@ -530,10 +533,10 @@ export function ReservarView() {
 
               {/* Price breakdown */}
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-foreground">Detalle del precio</h4>
+                <h4 className="text-sm font-semibold text-foreground">{t("Detalle del precio", "Price breakdown")}</h4>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground underline decoration-dotted cursor-help">
-                    {activity.currency} {pricePerPerson} × {form.guests} {form.guests === 1 ? "persona" : "personas"}
+                    {activity.currency} {pricePerPerson} × {form.guests} {form.guests === 1 ? t("persona", "person") : t("personas", "people")}
                   </span>
                   <span>{activity.currency} {subtotal}</span>
                 </div>
@@ -550,11 +553,11 @@ export function ReservarView() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Código de descuento"
+                  placeholder={t("Código de descuento", "Discount code")}
                   className="flex-1 border border-border rounded-xl px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                 />
                 <button className="px-4 py-2 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
-                  Aplicar
+                  {t("Aplicar", "Apply")}
                 </button>
               </div>
             </div>

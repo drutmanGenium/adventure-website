@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Clock, Users, Calendar, ChevronRight, Filter } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/contexts/language-context"
 
 const trekkings = [
   {
@@ -121,6 +122,7 @@ const difficultyColors = {
 }
 
 export function TrekkingsList() {
+  const { t } = useLanguage()
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null)
   const [selectedDuration, setSelectedDuration] = useState<string | null>(null)
 
@@ -140,10 +142,10 @@ export function TrekkingsList() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Todas las Aventuras</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Nuestros Trekkings</h1>
+          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">{t("Todas las Aventuras", "All Adventures")}</Badge>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t("Nuestros Trekkings", "Our Treks")}</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Explorá la Patagonia y Tierra del Fuego con guías expertos
+            {t("Explorá la Patagonia y Tierra del Fuego con guías expertos", "Explore Patagonia and Tierra del Fuego with expert guides")}
           </p>
         </div>
 
@@ -151,7 +153,7 @@ export function TrekkingsList() {
         <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center justify-center">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm font-medium">Filtrar por:</span>
+            <span className="text-sm font-medium">{t("Filtrar por:", "Filter by:")}</span>
           </div>
 
           {/* Difficulty Filter */}
@@ -162,7 +164,7 @@ export function TrekkingsList() {
               onClick={() => setSelectedDifficulty(null)}
               className="transition-all"
             >
-              Todas
+              {t("Todas", "All")}
             </Button>
             <Button
               variant={selectedDifficulty === "Fácil" ? "default" : "outline"}
@@ -170,7 +172,7 @@ export function TrekkingsList() {
               onClick={() => setSelectedDifficulty("Fácil")}
               className="transition-all"
             >
-              Fácil
+              {t("Fácil", "Easy")}
             </Button>
             <Button
               variant={selectedDifficulty === "Moderado" ? "default" : "outline"}
@@ -178,7 +180,7 @@ export function TrekkingsList() {
               onClick={() => setSelectedDifficulty("Moderado")}
               className="transition-all"
             >
-              Moderado
+              {t("Moderado", "Moderate")}
             </Button>
             <Button
               variant={selectedDifficulty === "Avanzado" ? "default" : "outline"}
@@ -186,7 +188,7 @@ export function TrekkingsList() {
               onClick={() => setSelectedDifficulty("Avanzado")}
               className="transition-all"
             >
-              Avanzado
+              {t("Avanzado", "Advanced")}
             </Button>
           </div>
 
@@ -198,7 +200,7 @@ export function TrekkingsList() {
               onClick={() => setSelectedDuration(selectedDuration === "1" ? null : "1")}
               className="transition-all"
             >
-              1 día
+              {t("1 día", "1 day")}
             </Button>
             <Button
               variant={selectedDuration === "2-3" ? "default" : "outline"}
@@ -206,7 +208,7 @@ export function TrekkingsList() {
               onClick={() => setSelectedDuration(selectedDuration === "2-3" ? null : "2-3")}
               className="transition-all"
             >
-              2-3 días
+              {t("2-3 días", "2-3 days")}
             </Button>
             <Button
               variant={selectedDuration === "4+" ? "default" : "outline"}
@@ -214,14 +216,14 @@ export function TrekkingsList() {
               onClick={() => setSelectedDuration(selectedDuration === "4+" ? null : "4+")}
               className="transition-all"
             >
-              4+ días
+              {t("4+ días", "4+ days")}
             </Button>
           </div>
         </div>
 
         {/* Results Count */}
         <p className="text-center text-muted-foreground mb-8">
-          Mostrando {filteredTrekkings.length} {filteredTrekkings.length === 1 ? "trekking" : "trekkings"}
+          {t("Mostrando", "Showing")} {filteredTrekkings.length} {filteredTrekkings.length === 1 ? "trekking" : "trekkings"}
         </p>
 
         {/* Trekkings Grid */}
@@ -265,23 +267,23 @@ export function TrekkingsList() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Users className="h-4 w-4 text-primary" />
-                    <span>Grupo: {trek.groupSize} personas</span>
+                    <span>{t("Grupo: ", "Group: ")}{trek.groupSize}{t(" personas", " people")}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>Próxima: {trek.nextDate}</span>
+                    <span>{t("Próxima: ", "Next: ")}{trek.nextDate}</span>
                   </div>
                 </div>
 
                 {/* Footer */}
                 <div className="pt-4 border-t border-border flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Desde</p>
+                    <p className="text-sm text-muted-foreground">{t("Desde", "From")}</p>
                     <p className="text-2xl font-bold text-primary">{trek.price}</p>
                   </div>
                   <Link href={`/trekkings/${trek.id}`}>
                     <Button className="group/btn bg-primary text-primary-foreground hover:bg-primary/90">
-                      Ver más
+                      {t("Ver más", "View more")}
                       <ChevronRight className="ml-1 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
@@ -294,7 +296,7 @@ export function TrekkingsList() {
         {/* No Results */}
         {filteredTrekkings.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-xl text-muted-foreground mb-4">No se encontraron trekkings con estos filtros</p>
+            <p className="text-xl text-muted-foreground mb-4">{t("No se encontraron trekkings con estos filtros", "No treks found with these filters")}</p>
             <Button
               onClick={() => {
                 setSelectedDifficulty(null)
@@ -302,7 +304,7 @@ export function TrekkingsList() {
               }}
               variant="outline"
             >
-              Limpiar filtros
+              {t("Limpiar filtros", "Clear filters")}
             </Button>
           </div>
         )}
