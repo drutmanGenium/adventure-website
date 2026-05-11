@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ACTIVITIES, dateToIso } from "@/components/actividades-view"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 import { ImageGalleryLightbox } from "@/components/image-gallery-lightbox"
+import { difficultyColors } from "@/components/trekking-card"
 
 const trekkingData: Record<string, any> = {
   "susana-pm": {
@@ -348,12 +349,6 @@ export function TrekkingDetail({ id }: { id: string }) {
   const departureId = selectedDate ? `${id}-${selectedDate}` : null
   const reservaUrl = departureId ? `/reservar?departureId=${encodeURIComponent(departureId)}` : "#"
 
-  const difficultyColors = {
-    Fácil: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
-    Moderado: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
-    Avanzado: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
-  }
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Image */}
@@ -381,7 +376,7 @@ export function TrekkingDetail({ id }: { id: string }) {
                 Volver a Actividades
               </Button>
             </Link>
-            <Badge className={`mb-4 ${difficultyColors[trekking.difficulty as keyof typeof difficultyColors]} border`}>
+            <Badge className={`mb-4 ${difficultyColors[trekking.difficulty] ?? ""} border`}>
               {trekking.difficulty}
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 text-balance">{trekking.title}</h1>
