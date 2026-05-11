@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ACTIVITIES, dateToIso } from "@/components/actividades-view"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 import { ImageGalleryLightbox } from "@/components/image-gallery-lightbox"
+import Image from "next/image"
 
 const trekkingData: Record<string, any> = {
   "susana-pm": {
@@ -358,7 +359,7 @@ export function TrekkingDetail({ id }: { id: string }) {
     <div className="min-h-screen bg-background">
       {/* Hero Image */}
       <div className="relative h-[60vh] overflow-hidden">
-        <img src={trekking.image || "/placeholder.svg"} alt={trekking.title} className="w-full h-full object-cover" />
+        <Image src={trekking.image || "/placeholder.svg"} alt={trekking.title} fill className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
         {/* Gallery Button */}

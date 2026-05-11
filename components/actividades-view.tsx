@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from "react"
 import { Search, X, ChevronDown, Users, Calendar, MapPin, Clock, TrendingUp } from "lucide-react"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -563,10 +564,11 @@ function ActivityCard({ activity }: { activity: Activity }) {
     >
       {/* Image */}
       <div className="relative rounded-2xl overflow-hidden aspect-[4/3] mb-3 bg-muted">
-        <img
+        <Image
           src={activity.cover_image}
           alt={activity.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {/* Badges */}
         {activity.popular && (
