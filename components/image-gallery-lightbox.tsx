@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 interface ImageGalleryLightboxProps {
   images: { src: string; alt: string }[]
@@ -98,10 +99,11 @@ export function ImageGalleryLightbox({ images, isOpen, onClose, initialIndex = 0
               <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
             </div>
           )}
-          <img
+          <Image
             src={currentImage.src}
             alt={currentImage.alt}
-            className="max-w-full max-h-full object-contain"
+            fill
+            className="object-contain"
             onLoad={() => setIsLoading(false)}
             onError={() => setIsLoading(false)}
           />

@@ -5,6 +5,7 @@ import { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export function DestinationsSection() {
   const { t, language } = useLanguage()
@@ -133,10 +134,11 @@ export function DestinationsSection() {
                   >
                     <div className="relative h-[420px] rounded-xl overflow-hidden shadow-2xl">
                       {/* Destination image */}
-                      <img
+                      <Image
                         src={destination.image || "/placeholder.svg"}
                         alt={destination.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                       {/* Dark gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />

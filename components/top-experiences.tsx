@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, TrendingUp } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 const experiences = [
   {
@@ -216,10 +217,11 @@ export function TopExperiences() {
               tabIndex={0}
             >
               <div className="relative h-80 overflow-hidden">
-                <img
+                <Image
                   src={exp.image || "/placeholder.svg"}
                   alt={exp.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
