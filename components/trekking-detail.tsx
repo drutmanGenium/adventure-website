@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { MapPin, Clock, Users, Calendar, Mountain, Check, X, Info, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
+import Script from "next/script"
 import { useState, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ACTIVITIES, dateToIso } from "@/components/actividades-view"
@@ -348,6 +349,80 @@ export function TrekkingDetail({ id }: { id: string }) {
   const departureId = selectedDate ? `${id}-${selectedDate}` : null
   const reservaUrl = departureId ? `/reservar?departureId=${encodeURIComponent(departureId)}` : "#"
 
+  // ─── JSON-LD structured data ────────────────────────────────────────────────
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TouristTrip",
+        "name": trekking.title,
+        "description": trekking.description,
+        "image": trekking.image,
+        "url": `https://patagoniatrek.com.ar/trekkings/${id}`,
+        "touristType": ["Hiking", "Adventure"],
+        "itinerary": {
+          "@type": "ItemList",
+          "itemListElement": trekking.itinerary.map((step: any, index: number) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "name": `${step.day}: ${step.title}`,
+            "description": step.description,
+          })),
+        },
+        "provider": {
+          "@type": "TravelAgency",
+          "name": "Patagonia Trek",
+          "url": "https://patagoniatrek.com.ar",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Ushuaia",
+            "addressRegion": "Tierra del Fuego",
+            "addressCountry": "AR",
+          },
+        },
+        "location": {
+          "@type": "Place",
+          "name": trekking.location,
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Ushuaia",
+            "addressRegion": "Tierra del Fuego",
+            "addressCountry": "AR",
+          },
+        },
+      },
+      {
+        "@type": "Product",
+        "name": trekking.title,
+        "description": trekking.description,
+        "image": trekking.image,
+        "url": `https://patagoniatrek.com.ar/trekkings/${id}`,
+        "category": trekking.type,
+        ...(activityData ? {
+          "offers": {
+            "@type": "Offer",
+            "price": activityData.price_from,
+            "priceCurrency": activityData.currency,
+            "availability": "https://schema.org/InStock",
+            "url": `https://patagoniatrek.com.ar/trekkings/${id}`,
+          },
+        } : {}),
+        ...(activityData?.rating ? {
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": activityData.rating,
+            "reviewCount": activityData.reviews_count ?? 0,
+            "bestRating": 5,
+          },
+        } : {}),
+        "brand": {
+          "@type": "Organization",
+          "name": "Patagonia Trek",
+        },
+      },
+    ],
+  }
+
   const difficultyColors = {
     Fácil: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
     Moderado: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
@@ -356,6 +431,11 @@ export function TrekkingDetail({ id }: { id: string }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <Script
+        id={`jsonld-trekking-${id}`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero Image */}
       <div className="relative h-[60vh] overflow-hidden">
         <img src={trekking.image || "/placeholder.svg"} alt={trekking.title} className="w-full h-full object-cover" />
