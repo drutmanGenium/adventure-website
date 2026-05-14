@@ -43,6 +43,8 @@ export const metadata: Metadata = {
   },
 }
 
+// Root layout: applies global fonts, language context, scroll-to-top behavior,
+// and Vercel analytics to every page in the app.
 export default function RootLayout({
   children,
 }: Readonly<{
