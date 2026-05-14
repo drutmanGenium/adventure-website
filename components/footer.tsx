@@ -5,6 +5,8 @@ import { Instagram, Mail, Phone, MapPin } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { createWhatsAppHref } from "@/lib/whatsapp"
 
+// Footer: 4-column layout with about, links, contact, and social. Renders
+// translated copy via the language context.
 export function Footer() {
   const { t } = useLanguage()
 
