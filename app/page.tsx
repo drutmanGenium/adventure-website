@@ -6,6 +6,8 @@ import { TestimonialsSection } from "@/components/testimonials-section"
 import { CTASection } from "@/components/cta-section"
 import { Footer } from "@/components/footer"
 
+// Landing page composition: navigation, hero, top experiences, destinations,
+// testimonials, CTA, and footer rendered in order.
 export default function HomePage() {
   return (
     <main className="min-h-screen">
