@@ -5,6 +5,8 @@ import { ArrowRight, Mountain } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import Link from "next/link"
 
+// Hero: full-viewport intro section with title, CTA, and Mountain icon. Copy
+// is rendered in the active language via the language context.
 export function HeroSection() {
   const { t } = useLanguage()
 
