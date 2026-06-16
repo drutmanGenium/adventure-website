@@ -95,3 +95,30 @@ export interface ContactRequest {
   subject: string
   message: string
 }
+
+// ─── Auth types ───────────────────────────────────────────────────────────────
+
+export interface AuthUser {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface RegisterRequest {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+}
+
+export interface AuthResponse {
+  message: string
+  token: string
+  user: AuthUser
+}
